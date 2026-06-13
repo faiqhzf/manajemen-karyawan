@@ -5,7 +5,6 @@ import com.karyawan.karyawan.service.KaryawanService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,9 +48,7 @@ public class KaryawanController {
         double total = service.getTotalGajiByDepartemen(departemen);
         
         // Memformat notasi ilmiah menjadi angka standar dengan pemisah ribuan ala Indonesia
-        String totalFormatted = String.format(new java.util.Locale("id", "ID"), "%,.0f", total);
-        
-        return "Total beban gaji untuk departemen " + departemen.toUpperCase() + " adalah: Rp " + totalFormatted;
+    String totalFormatted = String.format(java.util.Locale.of("id", "ID"), "%,.0f", total);        return "Total beban gaji untuk departemen " + departemen.toUpperCase() + " adalah: Rp " + totalFormatted;
     }
 
     // ==========================================
@@ -81,7 +78,7 @@ public class KaryawanController {
     public String edit(@PathVariable int id, @RequestBody Karyawan dataBaru) {
         return service.updateKaryawan(id, dataBaru);
     }
-
+  
     // Endpoint: Hapus karyawan berdasarkan ID
     @DeleteMapping("/{id}")
     public String delete(@PathVariable int id) {

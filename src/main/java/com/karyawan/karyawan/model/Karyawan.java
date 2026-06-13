@@ -1,14 +1,25 @@
 package com.karyawan.karyawan.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "karyawan")
 public class Karyawan {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // ID akan Auto-Increment di database
     private int id;
+    
     private String nama;
     private String departemen;
     private double gaji;
 
-    // Constructor
-    public Karyawan(int id, String nama, String departemen, double gaji) {
-        this.id = id;
+    // 1. WAJIB ADA: Konstruktor kosong untuk kebutuhan JPA/Hibernate
+    public Karyawan() {
+    }
+
+    // 2. Konstruktor berparameter (Tanpa 'id' karena id dibuat otomatis oleh database)
+    public Karyawan(String nama, String departemen, double gaji) {
         this.nama = nama;
         this.departemen = departemen;
         this.gaji = gaji;
