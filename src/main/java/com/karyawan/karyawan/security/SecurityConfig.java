@@ -36,15 +36,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Matikan CSRF karena kita menggunakan Token
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Matikan sesi cookie
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() // Izinkan endpoint login/register
-                .requestMatchers("/", "/index.html", "/login.html", "/*.css", "/*.js").permitAll() // Izinkan aset frontend
-                .anyRequest().authenticated() // Kunci SELURUH URL sisanya
+                .requestMatchers("/api/auth/**").permitAll()
+                
+                .requestMatchers("/", "/error", "/index.html", "/login.html", "/admin-hr.html", "/karyawan.html", "/*.css", "/*.js").permitAll()
+                .anyRequest().authenticated()
             );
 
-        // Sisipkan filter JWT kita sebelum filter standar Spring Security
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

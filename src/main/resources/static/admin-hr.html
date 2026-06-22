@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Karyawan - Dasbor HRD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased p-6">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-gray-900">Direktori Karyawan (HRD)</h1>
+                <p class="text-sm text-gray-500 mt-1">Kelola data profil dan kredensial akses staf perusahaan.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="status-badge" class="px-4 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800 hidden">Tersinkronisasi</span>
+                
+                <button onclick="handleLogout()" class="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold py-2 px-4 rounded-xl border border-red-200 text-sm transition-colors group">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <span>Keluar Sistem</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div class="col-span-1 bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
+                <h2 class="text-lg font-semibold mb-4 text-blue-700" id="form-title">Tambah Data Karyawan Baru</h2>
+                <form id="karyawan-form" class="space-y-4">
+                    <input type="hidden" id="karyawan-id">
+                    
+                    <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Profil Karyawan</h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                            <input type="text" id="nama" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Departemen</label>
+                            <select id="departemen" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                <option value="">Pilih Departemen...</option>
+                                <option value="IT">IT</option>
+                                <option value="Finance">Finance</option>
+                                <option value="HR">HR</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Operations">Operations</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Gaji Pokok (Rp)</label>
+                            <input type="number" id="gaji" required min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-blue-50 rounded-lg border border-blue-100 space-y-3" id="auth-fields">
+                        <h3 class="text-xs font-bold text-blue-800 uppercase tracking-wider">Kredensial Login Sistem</h3>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-900 mb-1">Username Karyawan</label>
+                            <input type="text" id="username" class="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Cth: budi_it">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-900 mb-1">Kata Sandi Sementara</label>
+                            <input type="password" id="password" class="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Minimal 6 karakter">
+                        </div>
+                        <p class="text-[10px] text-blue-700 leading-tight">Kosongkan username dan password saat sedang mengedit data (Update) jika tidak ingin mengubah kredensial.</p>
+                    </div>
+
+                    <div class="pt-2 flex gap-2">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors shadow-sm">Simpan Data</button>
+                        <button type="button" onclick="resetForm()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors">Batal</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-span-1 md:col-span-2 space-y-4">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3">
+                    <div class="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                        <svg class="w-5 h-5 text-gray-400 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="search-input" placeholder="Cari berdasarkan ID atau Nama Karyawan..." class="w-full bg-transparent border-none focus:ring-0 outline-none text-gray-700 placeholder-gray-400">
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <select id="filter-departemen" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 text-sm text-gray-700">
+                            <option value="">Semua Departemen</option>
+                            <option value="IT">Departemen IT</option>
+                            <option value="Finance">Departemen Finance</option>
+                            <option value="HR">Departemen HR</option>
+                            <option value="Marketing">Departemen Marketing</option>
+                            <option value="Operations">Departemen Operations</option>
+                        </select>
+                        <select id="sort-data" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 text-sm text-gray-700">
+                            <option value="terbaru">Data Terbaru (ID Terbesar)</option>
+                            <option value="terlama">Data Terlama (ID Terkecil)</option>
+                            <option value="gaji_tertinggi">Gaji Tertinggi</option>
+                            <option value="gaji_terendah">Gaji Terendah</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-gray-50 text-gray-600 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-4 font-semibold">ID</th>
+                                    <th class="px-6 py-4 font-semibold">Nama Karyawan</th>
+                                    <th class="px-6 py-4 font-semibold">Departemen</th>
+                                    <th class="px-6 py-4 font-semibold">Gaji Pokok</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Aksi HR</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="divide-y divide-gray-100">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. LAPISAN KEAMANAN (PROTEKSI HALAMAN)
+        const token = sessionStorage.getItem('hris_token');
+        const role = sessionStorage.getItem('hris_role');
+
+        if (!token || role !== 'ROLE_HRD') {
+            sessionStorage.clear();
+            window.location.href = '/login.html';
+        }
+
+        // 2. KONFIGURASI API & DOM
+        const API_URL = '/api/karyawan';
+        const form = document.getElementById('karyawan-form');
+        const tableBody = document.getElementById('table-body');
+        const formTitle = document.getElementById('form-title');
+        const statusBadge = document.getElementById('status-badge');
+        const searchInput = document.getElementById('search-input');
+        const filterDepartemen = document.getElementById('filter-departemen');
+        const sortData = document.getElementById('sort-data');
+
+        let globalKaryawanData = [];
+        const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+
+        const showStatus = (message, isError = false) => {
+            statusBadge.textContent = message;
+            statusBadge.className = `px-4 py-1.5 rounded-full text-sm font-medium ${isError ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`;
+            statusBadge.classList.remove('hidden');
+            setTimeout(() => statusBadge.classList.add('hidden'), 3000);
+        };
+
+        // 3. LOGOUT (PEMUTUSAN SESI)
+        function handleLogout() {
+            sessionStorage.removeItem('hris_token');
+            sessionStorage.removeItem('hris_username');
+            sessionStorage.removeItem('hris_role');
+            window.location.href = '/login.html';
+        }
+
+        // 4. READ (DENGAN INJEKSI TOKEN JWT)
+        async function fetchKaryawan() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    handleLogout(); // Usir jika token expired/dimanipulasi
+                    return;
+                }
+
+                const data = await response.json();
+                globalKaryawanData = data; 
+                applyFiltersAndSort();
+            } catch (error) {
+                showStatus('Gagal memuat data dari peladen', true);
+            }
+        }
+
+        // 5. MESIN FILTER & SORTING
+        function applyFiltersAndSort() {
+            const keyword = searchInput.value.toLowerCase();
+            const dept = filterDepartemen.value;
+            const sortMethod = sortData.value;
+
+            let result = globalKaryawanData.filter(k => {
+                const matchSearch = k.nama.toLowerCase().includes(keyword) || k.id.toString().includes(keyword);
+                const matchDept = dept === "" || k.departemen === dept;
+                return matchSearch && matchDept;
+            });
+
+            result.sort((a, b) => {
+                if (sortMethod === 'terbaru') return b.id - a.id;
+                if (sortMethod === 'terlama') return a.id - b.id;
+                if (sortMethod === 'gaji_tertinggi') return b.gaji - a.gaji;
+                if (sortMethod === 'gaji_terendah') return a.gaji - b.gaji;
+                return 0;
+            });
+
+            renderTable(result);
+        }
+
+        searchInput.addEventListener('input', applyFiltersAndSort);
+        filterDepartemen.addEventListener('change', applyFiltersAndSort);
+        sortData.addEventListener('change', applyFiltersAndSort);
+
+        function renderTable(data) {
+            tableBody.innerHTML = '';
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">Data tidak ditemukan.</td></tr>`;
+                return;
+            }
+
+            data.forEach(karyawan => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-blue-50 transition-colors';
+                tr.innerHTML = `
+                    <td class="px-6 py-4 text-gray-500 font-medium">#${karyawan.id}</td>
+                    <td class="px-6 py-4 font-bold text-gray-900">${karyawan.nama}</td>
+                    <td class="px-6 py-4"><span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold tracking-wide">${karyawan.departemen}</span></td>
+                    <td class="px-6 py-4 text-gray-700 font-medium">${formatRupiah(karyawan.gaji)}</td>
+                    <td class="px-6 py-4 text-right space-x-3">
+                        <button onclick="editKaryawan(${karyawan.id}, '${karyawan.nama}', '${karyawan.departemen}', ${karyawan.gaji})" class="text-blue-600 hover:text-blue-900 font-semibold">Edit</button>
+                        <button onclick="deleteKaryawan(${karyawan.id})" class="text-red-500 hover:text-red-800 font-semibold">Hapus</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // 6. CREATE & UPDATE (DENGAN INJEKSI TOKEN JWT & DATA AKUN)
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('karyawan-id').value;
+            
+            // Susun Payload (Sertakan username & password untuk backend)
+            const payload = {
+                nama: document.getElementById('nama').value,
+                departemen: document.getElementById('departemen').value,
+                gaji: parseFloat(document.getElementById('gaji').value),
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/${id}` : API_URL;
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    showStatus(id ? 'Data Karyawan Diperbarui' : 'Karyawan & Akun Berhasil Dibuat');
+                    resetForm();
+                    fetchKaryawan(); 
+                } else {
+                    showStatus('Gagal menyimpan. Pastikan username belum dipakai.', true);
+                }
+            } catch (error) {
+                showStatus('Terjadi kesalahan transmisi', true);
+            }
+        });
+
+        function editKaryawan(id, nama, departemen, gaji) {
+            document.getElementById('karyawan-id').value = id;
+            document.getElementById('nama').value = nama;
+            document.getElementById('departemen').value = departemen;
+            document.getElementById('gaji').value = gaji;
+            
+            // Kosongkan dan sembunyikan penekanan pada field autentikasi saat mode Edit
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            
+            formTitle.textContent = `Edit Data Karyawan #${id}`;
+            formTitle.classList.replace('text-blue-700', 'text-amber-600');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 7. DELETE (DENGAN INJEKSI TOKEN JWT)
+        async function deleteKaryawan(id) {
+            if (!confirm(`Tindakan ini tidak dapat dibatalkan. Hapus permanen karyawan #${id}?`)) return;
+            try {
+                const response = await fetch(`${API_URL}/${id}`, { 
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    showStatus('Data dihapus dari database');
+                    fetchKaryawan();
+                }
+            } catch (error) {
+                showStatus('Gagal menghapus data', true);
+            }
+        }
+
+        function resetForm() {
+            form.reset();
+            document.getElementById('karyawan-id').value = '';
+            formTitle.textContent = 'Tambah Data Karyawan Baru';
+            formTitle.classList.replace('text-amber-600', 'text-blue-700');
+        }
+
+        // Inisiasi awal
+        fetchKaryawan();
+    </script>
+</body>
+</html>
