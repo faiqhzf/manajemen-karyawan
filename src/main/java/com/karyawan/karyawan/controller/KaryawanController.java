@@ -1,7 +1,10 @@
 package com.karyawan.karyawan.controller;
 
+import com.karyawan.karyawan.dto.KaryawanRequestDTO;
 import com.karyawan.karyawan.model.Karyawan;
 import com.karyawan.karyawan.service.KaryawanService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,84 +13,84 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/karyawan")
-
 public class KaryawanController {
-   private final KaryawanService service;
 
-    public KaryawanController(KaryawanService service) {
-        this.service = service;
-    }
+    @Autowired
+    private KaryawanService service;
 
-    // Endpoint: Menampilkan semua data
+    // ==========================================
+    // ENDPOINT UTAMA (INTEGRASI UI)
+    // ==========================================
+
     @GetMapping
-    public List<Karyawan> getAll() {
-        return service.getAllKaryawan();
+    public ResponseEntity<List<Karyawan>> getAll() {
+        return ResponseEntity.ok(service.getAllKaryawan());
     }
 
-    // Endpoint: Menambah data baru
+    @GetMapping("/{id}")
+    public ResponseEntity<Karyawan> getById(@PathVariable long id) {
+        return ResponseEntity.ok(service.getKaryawanById(id));
+    }
+
     @PostMapping
-    public String addKaryawan(@RequestBody Karyawan karyawan) {
-        return service.tambahKaryawan(karyawan);
+    public ResponseEntity<?> addKaryawan(@RequestBody KaryawanRequestDTO dto) {
+        try {
+            Karyawan karyawan = service.tambahKaryawan(dto);
+            return ResponseEntity.ok(karyawan);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    // Endpoint (Stream): Filter berdasarkan Departemen
+    @PutMapping("/{id}")
+    public ResponseEntity<?> edit(@PathVariable long id, @RequestBody KaryawanRequestDTO dto) {
+        try {
+            Karyawan karyawan = service.updateKaryawan(id, dto);
+            return ResponseEntity.ok(karyawan);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable long id) {
+        service.deleteKaryawan(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // ==========================================
+    // ENDPOINT PEMBELAJARAN (STREAM, SET, MAP)
+    // ==========================================
+
     @GetMapping("/filter/{departemen}")
     public List<Karyawan> filterDepartemen(@PathVariable String departemen) {
         return service.getKaryawanByDepartemen(departemen);
     }
 
-    // Endpoint (Stream): Urutkan gaji tertinggi
     @GetMapping("/gaji-tertinggi")
     public List<Karyawan> sortByGaji() {
         return service.getKaryawanTermahal();
     }
 
-    // Endpoint (Stream): Hitung total gaji per departemen
     @GetMapping("/total-gaji/{departemen}")
     public String totalGajiDept(@PathVariable String departemen) {
         double total = service.getTotalGajiByDepartemen(departemen);
-        
-        // Memformat notasi ilmiah menjadi angka standar dengan pemisah ribuan ala Indonesia
-    String totalFormatted = String.format(java.util.Locale.of("id", "ID"), "%,.0f", total);        return "Total beban gaji untuk departemen " + departemen.toUpperCase() + " adalah: Rp " + totalFormatted;
+        String totalFormatted = String.format(java.util.Locale.of("id", "ID"), "%,.0f", total);
+        return "Total beban gaji untuk departemen " + departemen.toUpperCase() + " adalah: Rp " + totalFormatted;
     }
 
-    // ==========================================
-    // ENDPOINT UNTUK SET & MAP
-    // ==========================================
-
-    // Endpoint GET (Set): Menampilkan daftar departemen unik
     @GetMapping("/departemen")
     public Set<String> getDepartemen() {
         return service.getDepartemenUnik();
     }
 
-    // Endpoint GET (Map): Menampilkan struktur pengelompokan data
     @GetMapping("/grup")
     public Map<String, List<Karyawan>> getGrupKaryawan() {
         return service.getKaryawanGrupByDepartemen();
     }
 
-    // Endpoint: Menampilkan data unik (hanya yang terbaru jika ID duplikat)
     @GetMapping("/terbaru")
     public List<Karyawan> getTerbaru() {
         return service.getDaftarKaryawanTerbaru();
-    }
-
-    // Endpoint: Edit karyawan berdasarkan ID
-    @PutMapping("/{id}")
-    public String edit(@PathVariable int id, @RequestBody Karyawan dataBaru) {
-        return service.updateKaryawan(id, dataBaru);
-    }
-  
-    // Endpoint: Hapus karyawan berdasarkan ID
-    @DeleteMapping("/{id}")
-    public String delete(@PathVariable int id) {
-        return service.deleteKaryawan(id);
-    }
-
-    // Endpoint: Menampilkan 1 karyawan berdasarkan ID
-    @GetMapping("/{id}")
-    public Karyawan getById(@PathVariable int id) {
-        return service.getKaryawanById(id);
     }
 }
