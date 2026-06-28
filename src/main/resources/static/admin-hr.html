@@ -148,10 +148,33 @@
                             </tr>
                         </thead>
                         <tbody id="table-body" class="divide-y divide-slate-100 font-medium">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-8">
+                <div class="p-6 border-b border-slate-200 bg-slate-50/50">
+                    <h2 class="font-bold text-slate-900 text-lg">Persetujuan Cuti Karyawan</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Tinjau dan validasi permohonan izin staf.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-4 font-semibold">User ID</th>
+                                <th class="px-6 py-4 font-semibold">Periode Cuti</th>
+                                <th class="px-6 py-4 font-semibold">Alasan</th>
+                                <th class="px-6 py-4 font-semibold">Status</th>
+                                <th class="px-6 py-4 font-semibold text-right">Keputusan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-cuti-admin" class="divide-y divide-slate-100 font-medium text-slate-700">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -207,6 +230,22 @@
         </div>
     </div>
 
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-[60] transition-all">
+        <div class="bg-white rounded-2xl max-w-sm w-full shadow-xl border border-slate-100 overflow-hidden transform transition-all scale-95 opacity-0 duration-200" id="confirm-container">
+            <div class="p-6 text-center">
+                <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Konfirmasi Keputusan</h3>
+                <p class="text-sm text-slate-500 mb-6" id="confirm-message">Apakah Anda yakin?</p>
+                <div class="flex gap-3">
+                    <button onclick="closeConfirmModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-sm transition-colors">Batal</button>
+                    <button id="btn-confirm-action" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">Ya, Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = '/api/karyawan';
         const form = document.getElementById('karyawan-form');
@@ -220,12 +259,13 @@
         const modalContainer = document.getElementById('modal-container');
 
         let globalKaryawanData = [];
+        let pendingCutiId = null;
+        let pendingCutiStatus = null;
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
-        // Menampilkan Kredensial Pengguna Aktif di Sidebar
         document.getElementById('user-display-name').textContent = sessionStorage.getItem('hris_username') || 'HRD Admin';
 
-        // Kontrol Animasi Modal Dialog
+        // Kontrol Animasi Modal Data Karyawan
         function openFormModal() {
             formModal.classList.remove('hidden');
             setTimeout(() => {
@@ -243,6 +283,40 @@
             }, 200);
         }
 
+        // Kontrol Animasi Modal Konfirmasi Cuti
+        function openConfirmModal(id, statusBaru) {
+            pendingCutiId = id;
+            pendingCutiStatus = statusBaru;
+            
+            const messageEl = document.getElementById('confirm-message');
+            messageEl.innerHTML = `Anda akan menetapkan status <span class="font-bold text-slate-800">${statusBaru}</span> pada pengajuan cuti ini.`;
+            
+            const confirmBtn = document.getElementById('btn-confirm-action');
+            if(statusBaru === 'DISETUJUI') {
+                confirmBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm transition-colors";
+            } else {
+                confirmBtn.className = "flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition-colors";
+            }
+
+            const modal = document.getElementById('confirm-modal');
+            const container = document.getElementById('confirm-container');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                container.classList.remove('scale-95', 'opacity-0');
+                container.classList.add('scale-100', 'opacity-100');
+            }, 50);
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirm-modal');
+            const container = document.getElementById('confirm-container');
+            container.classList.remove('scale-100', 'opacity-100');
+            container.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+            pendingCutiId = null;
+            pendingCutiStatus = null;
+        }
+
         const showStatus = (message, isError = false) => {
             statusBadge.textContent = message;
             statusBadge.className = `px-3 py-1 rounded-full text-xs font-bold ${isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
@@ -255,18 +329,14 @@
             window.location.href = '/login.html';
         }
 
-        // AGREGASI METRIK ANALITIK (Dinamis Berdasarkan Data)
         function calculateMetrics(data) {
             document.getElementById('metric-total-karyawan').textContent = data.length;
-            
             const uniqueDepts = new Set(data.map(k => k.departemen.toUpperCase())).size;
             document.getElementById('metric-total-dept').textContent = uniqueDepts;
-            
             const totalGaji = data.reduce((sum, k) => sum + k.gaji, 0);
             document.getElementById('metric-total-gaji').textContent = formatRupiah(totalGaji);
         }
 
-        // READ DATA DENGAN SUNTIKAN HEADER JWT
         async function fetchKaryawan() {
             try {
                 const response = await fetch(API_URL, {
@@ -344,7 +414,6 @@
             });
         }
 
-        // CREATE & UPDATE
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('karyawan-id').value;
@@ -363,10 +432,7 @@
             try {
                 const response = await fetch(url, {
                     method: method,
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` 
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(payload)
                 });
                 
@@ -387,7 +453,6 @@
             document.getElementById('nama').value = nama;
             document.getElementById('departemen').value = departemen;
             document.getElementById('gaji').value = gaji;
-            
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
             
@@ -417,8 +482,68 @@
             formTitle.textContent = 'Tambah Data Karyawan Baru';
         }
 
-        // Bootstrap Jalur Inisiasi
+        async function fetchSemuaCuti() {
+            try {
+                const response = await fetch('/api/cuti', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (response.ok) {
+                    const data = await response.json();
+                    const tbody = document.getElementById('tabel-cuti-admin');
+                    tbody.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">Belum ada pengajuan cuti.</td></tr>`;
+                        return;
+                    }
+
+                    data.forEach(c => {
+                        const statusColor = c.status === 'DISETUJUI' ? 'text-emerald-600 bg-emerald-50' : (c.status === 'DITOLAK' ? 'text-red-600 bg-red-50' : 'text-amber-600 bg-amber-50');
+                        
+                        const actionButtons = c.status === 'MENUNGGU' ? `
+                            <button onclick="openConfirmModal(${c.id}, 'DISETUJUI')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs bg-emerald-50 px-3 py-1.5 rounded-lg mr-2">Setuju</button>
+                            <button onclick="openConfirmModal(${c.id}, 'DITOLAK')" class="text-red-600 hover:text-red-800 font-bold text-xs bg-red-50 px-3 py-1.5 rounded-lg">Tolak</button>
+                        ` : `<span class="text-slate-400 text-xs italic">Selesai</span>`;
+
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="px-6 py-4 font-bold text-slate-900">@${c.usernameKaryawan}</td>
+                                <td class="px-6 py-4">${c.tanggalMulai} s/d ${c.tanggalSelesai}</td>
+                                <td class="px-6 py-4 truncate max-w-[200px]" title="${c.alasan}">${c.alasan}</td>
+                                <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-bold tracking-wide ${statusColor}">${c.status}</span></td>
+                                <td class="px-6 py-4 text-right">${actionButtons}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (error) { console.error('Gagal mengambil data cuti', error); }
+        }
+
+        // Event listener untuk eksekusi update status cuti via modal kustom
+        document.getElementById('btn-confirm-action').addEventListener('click', async () => {
+            if(!pendingCutiId || !pendingCutiStatus) return;
+            
+            try {
+                const response = await fetch(`/api/cuti/${pendingCutiId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: pendingCutiStatus })
+                });
+
+                closeConfirmModal();
+
+                if (response.ok) {
+                    showStatus(`Cuti berhasil ${pendingCutiStatus.toLowerCase()}`);
+                    fetchSemuaCuti(); 
+                } else {
+                    showStatus(`Gagal merubah status cuti.`, true);
+                }
+            } catch (error) {
+                closeConfirmModal();
+                showStatus(`Gagal terhubung ke peladen.`, true);
+            }
+        });
+
         fetchKaryawan();
+        fetchSemuaCuti(); 
     </script>
 </body>
 </html>
