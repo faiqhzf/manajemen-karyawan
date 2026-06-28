@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.math.BigDecimal;
 
 @Service
 public class KaryawanService {
@@ -41,6 +42,12 @@ public class KaryawanService {
                 .orElseThrow(() -> new RuntimeException("Karyawan tidak ditemukan"));
     }
 
+    // Metode untuk mengambil profil berdasarkan username JWT
+    public Karyawan getKaryawanByUsername(String username) {
+        return karyawanRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Profil karyawan tidak ditemukan untuk user ini."));
+    }
+
     @Transactional
     public Karyawan tambahKaryawan(KaryawanRequestDTO dto) {
         // 1. Simpan Data Profil
@@ -48,6 +55,10 @@ public class KaryawanService {
         karyawan.setNama(dto.getNama());
         karyawan.setDepartemen(dto.getDepartemen());
         karyawan.setGaji(dto.getGaji());
+        
+        // Mengikat profil dengan entitas username
+        karyawan.setUsername(dto.getUsername()); 
+        
         Karyawan savedKaryawan = karyawanRepository.save(karyawan);
 
         // 2. Simpan Akun
@@ -58,7 +69,7 @@ public class KaryawanService {
             Pengguna pengguna = new Pengguna();
             pengguna.setUsername(dto.getUsername());
             pengguna.setPassword(passwordEncoder.encode(dto.getPassword()));
-            pengguna.setRole("ROLE_KARYAWAN");
+            pengguna.setRole("KARYAWAN");
             penggunaRepository.save(pengguna);
         }
         return savedKaryawan;
@@ -71,6 +82,10 @@ public class KaryawanService {
         karyawan.setNama(dto.getNama());
         karyawan.setDepartemen(dto.getDepartemen());
         karyawan.setGaji(dto.getGaji());
+        
+        // Memperbarui referensi username di dalam pangkalan data
+        karyawan.setUsername(dto.getUsername());
+        
         Karyawan savedKaryawan = karyawanRepository.save(karyawan);
 
         // 2. Logika Penambahan atau Pembaruan Akun Pengguna
@@ -112,31 +127,31 @@ public class KaryawanService {
 
     public List<Karyawan> getKaryawanTermahal() {
         return karyawanRepository.findAll().stream()
-                .sorted((k1, k2) -> Double.compare(k2.getGaji(), k1.getGaji()))
+                .sorted((k1, k2) -> k2.getGaji().compareTo(k1.getGaji()))
                 .toList();
     }
 
-    public double getTotalGajiByDepartemen(String departemen) {
+    public BigDecimal getTotalGajiByDepartemen(String departemen) {
         return karyawanRepository.findAll().stream()
                 .filter(k -> k.getDepartemen().equalsIgnoreCase(departemen))
-                .mapToDouble(Karyawan::getGaji)
-                .sum();
+                .map(k -> k.getGaji())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
     }
 
     public Set<String> getDepartemenUnik() {
         return karyawanRepository.findAll().stream()
-                .map(Karyawan::getDepartemen)
+                .map(k -> k.getDepartemen())
                 .collect(Collectors.toSet());
     }
 
     public Map<String, List<Karyawan>> getKaryawanGrupByDepartemen() {
         return karyawanRepository.findAll().stream()
-                .collect(Collectors.groupingBy(Karyawan::getDepartemen));
+                .collect(Collectors.groupingBy(k -> k.getDepartemen()));
     }
 
     public List<Karyawan> getDaftarKaryawanTerbaru() {
         return new ArrayList<>(karyawanRepository.findAll().stream()
-                .collect(Collectors.toMap(Karyawan::getId, k -> k, (exist, replace) -> replace))
+                .collect(Collectors.toMap(k -> k.getId(), k -> k, (exist, replace) -> replace))
                 .values());
     }
 }

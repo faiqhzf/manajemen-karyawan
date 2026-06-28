@@ -5,11 +5,16 @@ import com.karyawan.karyawan.model.Karyawan;
 import com.karyawan.karyawan.service.KaryawanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/karyawan")
@@ -59,6 +64,22 @@ public class KaryawanController {
     }
 
     // ==========================================
+    // ENDPOINT PORTAL KARYAWAN
+    // ==========================================
+    
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyProfile(Authentication authentication) {
+        try {
+            // Ekstraksi identitas langsung dari token JWT 
+            String currentUsername = authentication.getName();
+            Karyawan karyawan = service.getKaryawanByUsername(currentUsername);
+            return ResponseEntity.ok(karyawan);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    // ==========================================
     // ENDPOINT PEMBELAJARAN (STREAM, SET, MAP)
     // ==========================================
 
@@ -74,8 +95,13 @@ public class KaryawanController {
 
     @GetMapping("/total-gaji/{departemen}")
     public String totalGajiDept(@PathVariable String departemen) {
-        double total = service.getTotalGajiByDepartemen(departemen);
-        String totalFormatted = String.format(java.util.Locale.of("id", "ID"), "%,.0f", total);
+        // Tangkap sebagai BigDecimal
+        BigDecimal total = service.getTotalGajiByDepartemen(departemen);
+        
+        // Memformat BigDecimal menjadi format angka ribuan Indonesia
+        NumberFormat formatRupiah = NumberFormat.getInstance(Locale.of("id", "ID"));
+        String totalFormatted = formatRupiah.format(total);
+        
         return "Total beban gaji untuk departemen " + departemen.toUpperCase() + " adalah: Rp " + totalFormatted;
     }
 

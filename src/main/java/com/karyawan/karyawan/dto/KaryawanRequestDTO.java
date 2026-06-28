@@ -1,9 +1,10 @@
 package com.karyawan.karyawan.dto;
+import java.math.BigDecimal;
 
 public class KaryawanRequestDTO {
     private String nama;
     private String departemen;
-    private Double gaji;
+    private BigDecimal gaji;
     private String username;
     private String password;
 
@@ -14,8 +15,8 @@ public class KaryawanRequestDTO {
     public String getDepartemen() { return departemen; }
     public void setDepartemen(String departemen) { this.departemen = departemen; }
 
-    public Double getGaji() { return gaji; }
-    public void setGaji(Double gaji) { this.gaji = gaji; }
+    public BigDecimal getGaji() { return gaji; }
+    public void setGaji(BigDecimal gaji) { this.gaji = gaji; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
