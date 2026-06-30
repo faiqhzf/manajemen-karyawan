@@ -1,24 +1,30 @@
 package com.karyawan.karyawan.service;
 
 import com.karyawan.karyawan.dto.KaryawanRequestDTO;
+import com.karyawan.karyawan.exception.ResourceNotFoundException;
 import com.karyawan.karyawan.model.Karyawan;
 import com.karyawan.karyawan.model.Pengguna;
 import com.karyawan.karyawan.repository.KaryawanRepository;
 import com.karyawan.karyawan.repository.PenggunaRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.math.BigDecimal;
 
 @Service
 public class KaryawanService {
+
+    
+    private static final Logger log = LoggerFactory.getLogger(KaryawanService.class);
 
     @Autowired
     private KaryawanRepository karyawanRepository;
@@ -29,82 +35,75 @@ public class KaryawanService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // ==========================================
-    // CRUD & INTEGRASI AKUN (DTO)
-    // ==========================================
-
     public List<Karyawan> getAllKaryawan() {
+        log.info("Mengambil seluruh data karyawan dari database");
         return karyawanRepository.findAll();
     }
 
     public Karyawan getKaryawanById(long id) {
         return karyawanRepository.findById((int) id)
-                .orElseThrow(() -> new RuntimeException("Karyawan tidak ditemukan"));
+                // Menggunakan Custom Exception
+                .orElseThrow(() -> new ResourceNotFoundException("Data karyawan dengan ID " + id + " tidak ditemukan"));
     }
 
-    // Metode untuk mengambil profil berdasarkan username JWT
     public Karyawan getKaryawanByUsername(String username) {
         return karyawanRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Profil karyawan tidak ditemukan untuk user ini."));
+                .orElseThrow(() -> new ResourceNotFoundException("Profil karyawan tidak ditemukan untuk username: " + username));
     }
 
     @Transactional
     public Karyawan tambahKaryawan(KaryawanRequestDTO dto) {
-        // 1. Simpan Data Profil
+        log.info("Memulai proses penambahan karyawan baru: {}", dto.getNama());
+        
         Karyawan karyawan = new Karyawan();
         karyawan.setNama(dto.getNama());
         karyawan.setDepartemen(dto.getDepartemen());
         karyawan.setGaji(dto.getGaji());
-        
-        // Mengikat profil dengan entitas username
         karyawan.setUsername(dto.getUsername()); 
         
         Karyawan savedKaryawan = karyawanRepository.save(karyawan);
 
-        // 2. Simpan Akun
         if (dto.getUsername() != null && !dto.getUsername().trim().isEmpty() && dto.getPassword() != null) {
             if (penggunaRepository.findByUsername(dto.getUsername()).isPresent()) {
+                log.warn("Gagal membuat akun, username {} sudah terdaftar", dto.getUsername());
                 throw new RuntimeException("Username sudah terdaftar.");
             }
             Pengguna pengguna = new Pengguna();
             pengguna.setUsername(dto.getUsername());
             pengguna.setPassword(passwordEncoder.encode(dto.getPassword()));
-            pengguna.setRole("KARYAWAN");
+            pengguna.setRole("ROLE_KARYAWAN");
             penggunaRepository.save(pengguna);
+            log.info("Akun pengguna berhasil dibuat untuk username: {}", dto.getUsername());
         }
         return savedKaryawan;
     }
 
     @Transactional
     public Karyawan updateKaryawan(long id, KaryawanRequestDTO dto) {
-        // 1. Update Profil Karyawan
+        log.info("Memperbarui data karyawan dengan ID: {}", id);
+        
         Karyawan karyawan = getKaryawanById(id);
         karyawan.setNama(dto.getNama());
         karyawan.setDepartemen(dto.getDepartemen());
         karyawan.setGaji(dto.getGaji());
-        
-        // Memperbarui referensi username di dalam pangkalan data
         karyawan.setUsername(dto.getUsername());
         
         Karyawan savedKaryawan = karyawanRepository.save(karyawan);
 
-        // 2. Logika Penambahan atau Pembaruan Akun Pengguna
         if (dto.getUsername() != null && !dto.getUsername().trim().isEmpty() && dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
-            
-            // Cek apakah akun dengan username tersebut sudah ada
             penggunaRepository.findByUsername(dto.getUsername()).ifPresentOrElse(
                 penggunaExist -> {
-                    // Jika username sudah ada, perbarui password-nya
                     penggunaExist.setPassword(passwordEncoder.encode(dto.getPassword()));
                     penggunaRepository.save(penggunaExist);
+                    log.info("Kata sandi berhasil diperbarui untuk username: {}", dto.getUsername());
                 },
                 () -> {
-                    // Jika username belum ada, buat akun baru
                     Pengguna penggunaBaru = new Pengguna();
                     penggunaBaru.setUsername(dto.getUsername());
                     penggunaBaru.setPassword(passwordEncoder.encode(dto.getPassword()));
-                    penggunaBaru.setRole("ROLE_KARYAWAN"); // Asumsi default role dari dashboard
+                    penggunaBaru.setRole("ROLE_KARYAWAN");
                     penggunaRepository.save(penggunaBaru);
+                    log.info("Akun baru berhasil diregistrasi saat update untuk username: {}", dto.getUsername());
                 }
             );
         }
@@ -112,13 +111,12 @@ public class KaryawanService {
     }
 
     public void deleteKaryawan(long id) {
-        karyawanRepository.deleteById((int) id);
+        log.info("Menghapus data karyawan dengan ID: {}", id);
+        Karyawan karyawan = getKaryawanById(id); 
+        karyawanRepository.delete(karyawan);
     }
 
-    // ==========================================
-    // LOGIKA STREAM, SET, DAN MAP (DIKEMBALIKAN)
-    // ==========================================
-
+    
     public List<Karyawan> getKaryawanByDepartemen(String departemen) {
         return karyawanRepository.findAll().stream()
                 .filter(k -> k.getDepartemen().equalsIgnoreCase(departemen))
