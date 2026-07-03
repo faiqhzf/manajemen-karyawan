@@ -8,36 +8,71 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
         
+        :root {
+            --neu-bg: #dce4f0;
+            --neu-shadow-dark: #b8c6d9; 
+            --neu-shadow-light: #ffffff; 
+        }
+
         body {
             font-family: 'Nunito', sans-serif;
-            background-color: #dce4f0;
+            background-color: var(--neu-bg);
             overflow: hidden;
         }
 
-        /* Kontainer Kaca Utama */
         .glass-wrapper {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(236, 240, 243, 0.3);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 24px 24px 48px var(--neu-shadow-dark), 
+                       -24px -24px 48px var(--neu-shadow-light);
         }
 
-        /* Bilah Sisi Biru/Ungu Pegawai */
-        .sidebar-blue {
-            background: linear-gradient(180deg, #3b82f6 0%, #1e3a8a 100%);
-            box-shadow: 10px 0 30px rgba(59, 130, 246, 0.2);
-        }
-
-        /* Kartu Kaca Putih Dalam */
         .inner-glass-card {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.02);
+            box-shadow: 10px 10px 20px var(--neu-shadow-dark), 
+                       -10px -10px 20px var(--neu-shadow-light);
             transition: transform 0.2s ease;
         }
 
-        /* Kostumisasi Scrollbar */
+        .neu-pressed {
+            background: rgba(220, 228, 240, 0.4);
+            box-shadow: inset 6px 6px 12px var(--neu-shadow-dark), 
+                        inset -6px -6px 12px var(--neu-shadow-light);
+            border: 1px solid transparent;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .neu-pressed:focus {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: inset 8px 8px 16px var(--neu-shadow-dark), 
+                        inset -8px -8px 16px var(--neu-shadow-light);
+        }
+
+        .neu-button {
+            box-shadow: 6px 6px 12px var(--neu-shadow-dark), 
+                       -6px -6px 12px var(--neu-shadow-light);
+            transition: all 0.2s ease;
+        }
+        .neu-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 8px 8px 16px var(--neu-shadow-dark), 
+                       -8px -8px 16px var(--neu-shadow-light);
+        }
+        .neu-button:active {
+            transform: translateY(0);
+            box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), 
+                        inset -4px -4px 8px rgba(255,255,255,0.4);
+        }
+
+        .neu-icon {
+            box-shadow: 8px 8px 16px var(--neu-shadow-dark), 
+                       -8px -8px 16px var(--neu-shadow-light);
+        }
+
+        .sidebar-blue { background: linear-gradient(180deg, #3b82f6 0%, #1e3a8a 100%); box-shadow: 10px 0 30px rgba(59, 130, 246, 0.2); }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
@@ -48,14 +83,13 @@
     <script>
         const token = sessionStorage.getItem('hris_token');
         const role = sessionStorage.getItem('hris_role');
-        
         if (!token || role !== 'ROLE_KARYAWAN') {
             sessionStorage.clear();
             window.location.href = '/login.html';
         }
     </script>
 
-    <div id="status-badge" class="fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-xl hidden z-[9999] transform transition-all flex items-center gap-3">
+    <div id="status-badge" class="neu-icon fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 border border-emerald-200 hidden z-[9999] transform transition-all flex items-center gap-3">
         <span id="status-icon"></span>
         <span id="status-text">Notifikasi Sistem</span>
     </div>
@@ -63,34 +97,33 @@
     <div class="glass-wrapper w-full max-w-[1400px] h-full rounded-[2.5rem] flex overflow-hidden relative">
         
         <aside id="sidebar" class="sidebar-blue w-24 flex-shrink-0 flex flex-col py-8 justify-between rounded-l-[2.5rem] relative z-40 transition-all duration-300">
-            
             <div id="sidebar-header" class="flex items-center justify-center w-full px-6 mb-8 transition-all duration-300">
-                <button onclick="toggleSidebar()" class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/30 shadow-lg hover:bg-white/30 transition-all shrink-0">
+                <button onclick="toggleSidebar()" class="neu-button w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/30 hover:bg-white/30 transition-all shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"></path></svg>
                 </button>
                 <span class="sidebar-text text-white font-black text-xl ml-4 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">MyHRIS</span>
             </div>
 
             <nav class="flex flex-col gap-4 w-full px-6">
-                <button onclick="switchTab('tab-profil')" id="btn-tab-profil" class="sidebar-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-white bg-white/20 shadow-inner border border-white/10 transition-all" title="Profil Anda">
+                <button onclick="switchTab('tab-profil')" id="btn-tab-profil" class="sidebar-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-white bg-white/20 shadow-inner border border-white/10 transition-all">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
                     <span class="sidebar-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Profil Pribadi</span>
                 </button>
-                <button onclick="switchTab('tab-cuti')" id="btn-tab-cuti" class="sidebar-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-blue-200 hover:text-white hover:bg-white/10 transition-all" title="Cuti & Izin">
+                <button onclick="switchTab('tab-cuti')" id="btn-tab-cuti" class="sidebar-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-blue-200 hover:text-white hover:bg-white/10 transition-all">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     <span class="sidebar-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Riwayat Kehadiran</span>
                 </button>
             </nav>
 
             <div class="w-full px-6 mt-auto">
-                <button onclick="handleLogout()" class="sidebar-toggle-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-blue-200 hover:text-white hover:bg-rose-500/80 transition-all border border-transparent hover:border-rose-400" title="Keluar Sistem">
+                <button onclick="handleLogout()" class="sidebar-toggle-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-blue-200 hover:text-white hover:bg-rose-500/80 transition-all border border-transparent hover:border-rose-400">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span class="sidebar-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Keluar Sistem</span>
                 </button>
             </div>
         </aside>
 
-        <main class="flex-grow flex flex-col overflow-hidden relative bg-white/20">
+        <main class="flex-grow flex flex-col overflow-hidden relative">
             
             <header class="px-10 py-8 flex justify-between items-center z-10 border-b border-white/40">
                 <div>
@@ -98,7 +131,7 @@
                     <p class="text-sm font-bold text-slate-500 mt-1 uppercase tracking-widest" id="header-subtitle">Data Demografi & Organisasi</p>
                 </div>
                 <div class="flex items-center gap-4">
-                    <div class="px-5 py-2 bg-white/60 backdrop-blur-md rounded-2xl border border-white font-black text-sm text-blue-600 shadow-sm" id="header-badge-dept">
+                    <div class="neu-pressed px-6 py-2.5 bg-transparent rounded-2xl font-black text-sm text-blue-600 shadow-sm" id="header-badge-dept">
                         Memuat...
                     </div>
                 </div>
@@ -127,16 +160,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
                         
                         <div class="inner-glass-card rounded-[2.5rem] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
-                            <div class="w-32 h-32 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white text-5xl font-black border-8 border-white shadow-xl mb-6 relative z-10" id="profil-inisial"></div>
+                            <div class="neu-icon w-32 h-32 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white text-5xl font-black border-[6px] border-[#dce4f0] mb-6 relative z-10" id="profil-inisial"></div>
                             <h2 class="text-3xl font-black text-slate-800 tracking-tight z-10" id="profil-nama">Nama Pegawai</h2>
                             <p class="text-sm font-bold text-blue-600 uppercase tracking-widest mt-2 z-10">Pegawai ID: #<span id="profil-id">000</span></p>
-                            
                             <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-blue-100 rounded-full blur-3xl opacity-50 z-0"></div>
                         </div>
 
                         <div class="space-y-6">
                             <div class="inner-glass-card rounded-3xl p-6 flex items-center gap-5 transition-transform hover:-translate-y-1">
-                                <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center border border-white shadow-inner">
+                                <div class="neu-pressed w-14 h-14 bg-transparent text-indigo-600 rounded-2xl flex items-center justify-center">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                                 </div>
                                 <div>
@@ -146,7 +178,7 @@
                             </div>
 
                             <div class="inner-glass-card rounded-3xl p-6 flex items-center gap-5 transition-transform hover:-translate-y-1 bg-gradient-to-r from-emerald-50 to-transparent">
-                                <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center border border-white shadow-inner">
+                                <div class="neu-pressed w-14 h-14 bg-transparent text-emerald-600 rounded-2xl flex items-center justify-center">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 </div>
                                 <div>
@@ -163,7 +195,7 @@
                         
                         <div class="p-6 border-b border-white/50 bg-white/40 flex justify-between items-center">
                             <h2 class="font-black text-slate-800 text-xl">Dokumen Ketidakhadiran</h2>
-                            <button onclick="openModalCuti()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black text-sm transition-all shadow-lg shadow-blue-200 flex items-center gap-2">
+                            <button onclick="openModalCuti()" class="neu-button bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
                                 Ajukan Formulir Baru
                             </button>
@@ -190,30 +222,30 @@
         </main>
     </div>
 
-    <div id="modal-cuti" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 z-[60] transition-all">
+    <div id="modal-cuti" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-md flex items-center justify-center p-4 z-[60] transition-all">
         <div class="inner-glass-card rounded-[2.5rem] max-w-md w-full border border-white/60 overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0 duration-200" id="modal-container">
-            <div class="p-6 border-b border-white/50 bg-white/50 flex justify-between items-center">
+            <div class="p-6 border-b border-white/50 bg-white/40 flex justify-between items-center">
                 <h2 class="text-lg font-black text-slate-800">Form Pengajuan Izin</h2>
-                <button onclick="closeModalCuti()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 hover:bg-slate-300/50 text-slate-600 font-bold transition-colors">&times;</button>
+                <button onclick="closeModalCuti()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
             </div>
             
-            <form id="form-pengajuan-cuti" class="p-8 space-y-5 bg-white/40">
+            <form id="form-pengajuan-cuti" class="p-8 space-y-5 bg-white/20">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Mulai Tanggal</label>
-                        <input type="date" id="tgl-mulai" required class="w-full px-4 py-3 bg-white/70 border border-white rounded-2xl font-bold text-slate-800 text-xs focus:ring-4 focus:ring-blue-100 outline-none">
+                        <input type="date" id="tgl-mulai" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
                     </div>
                     <div>
                         <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Sampai Tanggal</label>
-                        <input type="date" id="tgl-selesai" required class="w-full px-4 py-3 bg-white/70 border border-white rounded-2xl font-bold text-slate-800 text-xs focus:ring-4 focus:ring-blue-100 outline-none">
+                        <input type="date" id="tgl-selesai" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
                     </div>
                 </div>
                 <div>
                     <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Keterangan / Alasan</label>
-                    <textarea id="alasan-cuti" required rows="3" class="w-full px-4 py-3 bg-white/70 border border-white rounded-2xl font-bold text-slate-800 text-sm focus:ring-4 focus:ring-blue-100 outline-none resize-none" placeholder="Deskripsikan alasan..."></textarea>
+                    <textarea id="alasan-cuti" required rows="3" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-sm resize-none" placeholder="Deskripsikan alasan..."></textarea>
                 </div>
                 <div class="pt-4 flex gap-3">
-                    <button type="submit" id="btn-submit-cuti" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl text-sm transition-all shadow-lg shadow-blue-200">Kirim Dokumen</button>
+                    <button type="submit" id="btn-submit-cuti" class="neu-button w-full bg-blue-600 text-white font-black py-4 rounded-2xl text-sm">Kirim Dokumen</button>
                 </div>
             </form>
         </div>
@@ -225,7 +257,27 @@
         const statusIcon = document.getElementById('status-icon');
         const statusText = document.getElementById('status-text');
 
-        // Fitur Toggle Sidebar Tersembunyi
+        function handleLogout() {
+            sessionStorage.clear();
+            window.location.href = '/login.html';
+        }
+
+        function showStatus(message, isError = false) {
+            statusText.textContent = message;
+            if(isError) {
+                statusBadge.className = "neu-icon fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-rose-100 text-rose-800 z-[100] transform transition-all flex items-center gap-3";
+                statusIcon.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+            } else {
+                statusBadge.className = "neu-icon fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 z-[100] transform transition-all flex items-center gap-3";
+                statusIcon.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            }
+            statusBadge.classList.remove('hidden', 'translate-y-4', 'opacity-0');
+            setTimeout(() => {
+                statusBadge.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => statusBadge.classList.add('hidden'), 300);
+            }, 3500);
+        }
+
         let isSidebarExpanded = false;
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -236,62 +288,24 @@
             isSidebarExpanded = !isSidebarExpanded;
 
             if (isSidebarExpanded) {
-                // Mode Diperluas
                 sidebar.classList.remove('w-24');
                 sidebar.classList.add('w-64');
                 header.classList.remove('justify-center');
                 header.classList.add('justify-start');
 
-                texts.forEach(t => {
-                    t.classList.remove('hidden', 'opacity-0');
-                    t.classList.add('inline-block', 'opacity-100');
-                });
-                btns.forEach(btn => {
-                    btn.classList.remove('w-12', 'mx-auto', 'justify-center');
-                    btn.classList.add('w-full', 'justify-start', 'px-5');
-                });
+                texts.forEach(t => { t.classList.remove('hidden', 'opacity-0'); t.classList.add('inline-block', 'opacity-100'); });
+                btns.forEach(btn => { btn.classList.remove('w-12', 'mx-auto', 'justify-center'); btn.classList.add('w-full', 'justify-start', 'px-5'); });
             } else {
-                // Mode Diciutkan
                 sidebar.classList.remove('w-64');
                 sidebar.classList.add('w-24');
                 header.classList.remove('justify-start');
                 header.classList.add('justify-center');
 
-                texts.forEach(t => {
-                    t.classList.remove('inline-block', 'opacity-100');
-                    t.classList.add('hidden', 'opacity-0');
-                });
-                btns.forEach(btn => {
-                    btn.classList.remove('w-full', 'justify-start', 'px-5');
-                    btn.classList.add('w-12', 'mx-auto', 'justify-center');
-                });
+                texts.forEach(t => { t.classList.remove('inline-block', 'opacity-100'); t.classList.add('hidden', 'opacity-0'); });
+                btns.forEach(btn => { btn.classList.remove('w-full', 'justify-start', 'px-5'); btn.classList.add('w-12', 'mx-auto', 'justify-center'); });
             }
         }
 
-        // Fungsi Logout
-        function handleLogout() {
-            sessionStorage.clear();
-            window.location.href = '/login.html';
-        }
-
-        // Fungsi Notifikasi Melayang (Toast)
-        function showStatus(message, isError = false) {
-            statusText.textContent = message;
-            if(isError) {
-                statusBadge.className = "fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-rose-100 text-rose-800 border border-rose-200 shadow-xl z-[9999] transform transition-all flex items-center gap-3";
-                statusIcon.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
-            } else {
-                statusBadge.className = "fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-xl z-[9999] transform transition-all flex items-center gap-3";
-                statusIcon.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
-            }
-            statusBadge.classList.remove('hidden', 'translate-y-4', 'opacity-0');
-            setTimeout(() => {
-                statusBadge.classList.add('translate-y-4', 'opacity-0');
-                setTimeout(() => statusBadge.classList.add('hidden'), 300);
-            }, 3500);
-        }
-
-        // Navigasi Tab (SPA)
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
@@ -305,7 +319,6 @@
             }
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                // Menghapus pewarnaan aktif tanpa mengganggu kelas lebar (w-12/w-full)
                 btn.classList.remove('text-white', 'bg-white/20', 'shadow-inner', 'border', 'border-white/10');
                 btn.classList.add('text-blue-200', 'hover:text-white', 'hover:bg-white/10');
             });
@@ -315,7 +328,6 @@
             activeBtn.classList.add('text-white', 'bg-white/20', 'shadow-inner', 'border', 'border-white/10');
         }
 
-        // Kontrol Modal
         function openModalCuti() {
             const modal = document.getElementById('modal-cuti');
             const container = document.getElementById('modal-container');
@@ -337,7 +349,6 @@
             }, 200);
         }
 
-        // Pengambilan Data Profil
         async function fetchMyProfile() {
             try {
                 const response = await fetch('/api/karyawan/me', {
@@ -370,7 +381,6 @@
             }
         }
 
-        // Pengambilan Data Cuti
         async function fetchRiwayatCuti() {
             try {
                 const response = await fetch('/api/cuti/me', { headers: { 'Authorization': `Bearer ${token}` } });
@@ -398,7 +408,6 @@
             } catch (error) { console.error('Gagal memuat cuti', error); }
         }
 
-        // Pengajuan Formulir Cuti
         document.getElementById('form-pengajuan-cuti').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -436,7 +445,6 @@
             }
         });
 
-        // Eksekusi Pemuatan Awal
         fetchMyProfile();
         
     </script>

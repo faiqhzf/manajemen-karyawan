@@ -8,47 +8,81 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
         
+        :root {
+            /* Warna Dasar Latar & Bayangan Neumorphism */
+            --neu-bg: #dce4f0;
+            --neu-shadow-dark: #b8c6d9; 
+            --neu-shadow-light: #ffffff; 
+        }
+
         body {
             font-family: 'Nunito', sans-serif;
-            background-color: #dce4f0;
+            background-color: var(--neu-bg);
             overflow: hidden;
         }
 
-        /* Kontainer Kaca Utama */
+        /* 1. Hibrida: Kaca + Neumorphism Dasar */
         .glass-wrapper {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(236, 240, 243, 0.3); /* Transparansi ringan */
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            /* Bayangan Ekstrusi Neumorphism */
+            box-shadow: 24px 24px 48px var(--neu-shadow-dark), 
+                       -24px -24px 48px var(--neu-shadow-light);
         }
 
-        /* Bilah Sisi Ungu */
-        .sidebar-purple {
-            background: linear-gradient(180deg, #5c43d6 0%, #3a268a 100%);
-            box-shadow: 10px 0 30px rgba(92, 67, 214, 0.2);
-        }
-
-        /* Kartu Gradien Dasbor */
-        .card-purple-gradient {
-            background: linear-gradient(135deg, #664bd9 0%, #4a34b2 100%);
-            box-shadow: 0 15px 30px rgba(102, 75, 217, 0.3);
-        }
-        
-        .card-pink-gradient {
-            background: linear-gradient(135deg, #ff7597 0%, #ff527a 100%);
-            box-shadow: 0 15px 30px rgba(255, 117, 151, 0.3);
-        }
-
-        /* Kartu Kaca Putih Dalam */
+        /* 2. Kartu Internal Timbul (Soft Pop) */
         .inner-glass-card {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.02);
+            box-shadow: 10px 10px 20px var(--neu-shadow-dark), 
+                       -10px -10px 20px var(--neu-shadow-light);
             transition: transform 0.2s ease;
         }
 
-        /* Kostumisasi Scrollbar */
+        /* 3. Input & Kolom Pencarian Tenggelam (Inset Shadow) */
+        .neu-pressed {
+            background: rgba(220, 228, 240, 0.4);
+            box-shadow: inset 6px 6px 12px var(--neu-shadow-dark), 
+                        inset -6px -6px 12px var(--neu-shadow-light);
+            border: 1px solid transparent;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .neu-pressed:focus {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: inset 8px 8px 16px var(--neu-shadow-dark), 
+                        inset -8px -8px 16px var(--neu-shadow-light);
+        }
+
+        /* 4. Tombol 3D Interaktif */
+        .neu-button {
+            box-shadow: 6px 6px 12px var(--neu-shadow-dark), 
+                       -6px -6px 12px var(--neu-shadow-light);
+            transition: all 0.2s ease;
+        }
+        .neu-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 8px 8px 16px var(--neu-shadow-dark), 
+                       -8px -8px 16px var(--neu-shadow-light);
+        }
+        .neu-button:active {
+            transform: translateY(0);
+            box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), 
+                        inset -4px -4px 8px rgba(255,255,255,0.4);
+        }
+
+        /* 5. Ikon / Avatar Timbul */
+        .neu-icon {
+            box-shadow: 8px 8px 16px var(--neu-shadow-dark), 
+                       -8px -8px 16px var(--neu-shadow-light);
+        }
+
+        /* Gaya yang dipertahankan */
+        .sidebar-purple { background: linear-gradient(180deg, #5c43d6 0%, #3a268a 100%); box-shadow: 10px 0 30px rgba(92, 67, 214, 0.2); }
+        .card-purple-gradient { background: linear-gradient(135deg, #664bd9 0%, #4a34b2 100%); box-shadow: 0 15px 30px rgba(102, 75, 217, 0.3); }
+        .card-pink-gradient { background: linear-gradient(135deg, #ff7597 0%, #ff527a 100%); box-shadow: 0 15px 30px rgba(255, 117, 151, 0.3); }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
@@ -65,7 +99,7 @@
         }
     </script>
 
-    <div id="status-badge" class="fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-xl hidden z-[9999] transform transition-all flex items-center gap-3">
+    <div id="status-badge" class="neu-icon fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 border border-emerald-200 hidden z-[9999] transform transition-all flex items-center gap-3">
         <span id="status-icon"></span>
         <span id="status-text">Notifikasi Sistem</span>
     </div>
@@ -73,28 +107,27 @@
     <div class="glass-wrapper w-full max-w-[1500px] h-full rounded-[2.5rem] flex overflow-hidden relative">
         
         <aside id="sidebar-left" class="sidebar-purple w-24 flex-shrink-0 flex flex-col py-8 justify-between rounded-l-[2.5rem] relative z-40 transition-all duration-300">
-            
             <div id="sidebar-left-header" class="flex items-center justify-center w-full px-6 mb-8 transition-all duration-300">
-                <button onclick="toggleLeftSidebar()" class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/30 shadow-lg hover:bg-white/30 transition-all shrink-0" title="Buka/Tutup Menu">
+                <button onclick="toggleLeftSidebar()" class="neu-button w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/30 hover:bg-white/30 transition-all shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"></path></svg>
                 </button>
                 <span class="sidebar-left-text text-white font-black text-xl ml-4 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Portal HRD</span>
             </div>
 
             <nav class="flex flex-col gap-4 w-full px-6">
-                <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="sidebar-left-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-white bg-white/20 shadow-inner border border-white/10 transition-all" title="Dasbor Analitik">
+                <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="sidebar-left-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-white bg-white/20 shadow-inner border border-white/10 transition-all">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                     <span class="sidebar-left-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Dasbor Analitik</span>
                 </button>
                 
-                <button onclick="switchTab('tab-karyawan')" id="btn-tab-karyawan" class="sidebar-left-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-indigo-300 hover:text-white hover:bg-white/10 transition-all" title="Kelola Karyawan">
+                <button onclick="switchTab('tab-karyawan')" id="btn-tab-karyawan" class="sidebar-left-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-indigo-300 hover:text-white hover:bg-white/10 transition-all">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     <span class="sidebar-left-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Direktori Pegawai</span>
                 </button>
             </nav>
 
             <div class="w-full px-6 mt-auto">
-                <button onclick="sessionStorage.clear(); window.location.href='/login.html';" class="sidebar-left-toggle-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-indigo-300 hover:text-white hover:bg-rose-500/80 transition-all border border-transparent hover:border-rose-400" title="Keluar Sistem">
+                <button onclick="sessionStorage.clear(); window.location.href='/login.html';" class="sidebar-left-toggle-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-indigo-300 hover:text-white hover:bg-rose-500/80 transition-all border border-transparent hover:border-rose-400">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span class="sidebar-left-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Keluar Sistem</span>
                 </button>
@@ -102,17 +135,18 @@
         </aside>
 
         <main class="flex-grow flex flex-col overflow-hidden relative">
-            <header class="px-10 py-8 flex justify-between items-center z-10 border-b border-white/20">
+            <header class="px-10 py-8 flex justify-between items-center z-10 border-b border-white/40">
                 <div>
                     <h1 class="text-3xl font-black text-slate-800 tracking-tight" id="header-title">Dasbor Analitik</h1>
                 </div>
                 
                 <div class="flex items-center gap-6">
-                    <div class="flex items-center gap-3 bg-white/60 px-5 py-2.5 rounded-[1.5rem] border border-white shadow-sm w-72">
-                        <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        <input type="text" id="search-input" placeholder="Cari nama pegawai..." class="w-full bg-transparent border-none focus:ring-0 outline-none text-sm text-slate-700 placeholder-slate-400 font-bold">
+                    <div class="flex items-center gap-3 neu-pressed px-5 py-2.5 rounded-[1.5rem] w-72">
+                        <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="search-input" placeholder="Cari nama pegawai..." class="w-full bg-transparent border-none focus:ring-0 outline-none text-sm text-slate-700 placeholder-slate-500 font-bold">
                     </div>
-                    <div class="w-12 h-12 rounded-full bg-white border-2 border-white shadow-md overflow-hidden flex items-center justify-center shrink-0">
+                    
+                    <div class="neu-icon w-12 h-12 rounded-full bg-white border-[3px] border-[#dce4f0] overflow-hidden flex items-center justify-center shrink-0">
                         <img src="https://api.dicebear.com/7.x/notionists/svg?seed=AdminHR" alt="Admin" class="w-full h-full object-cover">
                     </div>
                 </div>
@@ -151,7 +185,6 @@
                                     <span class="text-xs font-bold text-indigo-200 uppercase tracking-widest">Divisi Aktif</span>
                                 </div>
                             </div>
-                            
                             <div class="card-pink-gradient rounded-[2.5rem] p-6 text-white shadow-lg flex-1 flex flex-col justify-between">
                                 <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center border border-white/30 backdrop-blur-md mb-2 shrink-0">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -168,32 +201,28 @@
                 <div id="tab-karyawan" class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out]">
                     <div class="inner-glass-card rounded-[2.5rem] overflow-hidden flex flex-col h-[75vh]">
                         
-                        <div class="p-6 border-b border-white/50 bg-white/40 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="p-6 border-b border-white/50 bg-white/30 flex flex-col sm:flex-row justify-between items-center gap-4">
                             <h2 class="font-black text-slate-800 text-xl">Daftar Karyawan</h2>
                             
-                            <div class="flex flex-wrap gap-2">
-                                <div class="relative">
-                                    <select id="filter-departemen" class="bg-white/70 border border-white/50 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none shadow-sm focus:ring-2 focus:ring-indigo-100 cursor-pointer">
-                                        <option value="">Semua Divisi</option>
-                                        <option value="IT">IT</option>
-                                        <option value="Finance">Finance</option>
-                                        <option value="HR">HR</option>
-                                        <option value="Marketing">Marketing</option>
-                                        <option value="Operations">Operations</option>
-                                    </select>
-                                </div>
+                            <div class="flex flex-wrap gap-3">
+                                <select id="filter-departemen" class="neu-pressed px-4 py-2.5 text-xs font-bold text-slate-700 cursor-pointer">
+                                    <option value="">Semua Divisi</option>
+                                    <option value="IT">IT</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="HR">HR</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Operations">Operations</option>
+                                </select>
                                 
-                                <div class="relative">
-                                    <select id="sort-data" class="bg-white/70 border border-white/50 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none shadow-sm focus:ring-2 focus:ring-indigo-100 cursor-pointer">
-                                        <option value="terbaru">Terbaru - Terlama</option>
-                                        <option value="terlama">Terlama - Terbaru</option>
-                                        <option value="gaji_tertinggi">Gaji: Tertinggi</option>
-                                        <option value="gaji_terendah">Gaji: Terendah</option>
-                                    </select>
-                                </div>
+                                <select id="sort-data" class="neu-pressed px-4 py-2.5 text-xs font-bold text-slate-700 cursor-pointer">
+                                    <option value="terbaru">Terbaru - Terlama</option>
+                                    <option value="terlama">Terlama - Terbaru</option>
+                                    <option value="gaji_tertinggi">Gaji: Tertinggi</option>
+                                    <option value="gaji_terendah">Gaji: Terendah</option>
+                                </select>
                                 
-                                <button onclick="openFormModal()" class="bg-[#5c43d6] hover:bg-[#4a34b2] text-white px-4 py-2 rounded-xl font-black text-xs transition-all shadow-md shadow-indigo-200 flex items-center gap-1.5 shrink-0">
-                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                                <button onclick="openFormModal()" class="neu-button bg-[#5c43d6] text-white px-5 py-2.5 rounded-xl font-black text-xs flex items-center gap-1.5 shrink-0">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
                                     Tambah
                                 </button>
                             </div>
@@ -201,7 +230,7 @@
 
                         <div class="overflow-y-auto flex-grow p-2">
                             <table class="w-full text-left text-sm whitespace-nowrap">
-                                <thead class="text-slate-400 font-black uppercase tracking-widest text-[10px]">
+                                <thead class="text-slate-500 font-black uppercase tracking-widest text-[10px]">
                                     <tr>
                                         <th class="px-6 py-4">Informasi Pegawai</th>
                                         <th class="px-6 py-4">Departemen</th>
@@ -219,17 +248,17 @@
             </div>
         </main>
 
-        <aside id="sidebar-right" class="w-[380px] bg-white/60 backdrop-blur-2xl border-l border-white/50 flex flex-col rounded-r-[2.5rem] relative z-20 shrink-0 transition-all duration-300">
+        <aside id="sidebar-right" class="inner-glass-card w-[380px] flex flex-col rounded-r-[2.5rem] relative z-20 shrink-0 transition-all duration-300 !border-l-0">
             
-            <div id="sidebar-right-header" class="p-8 border-b border-slate-200/50 flex justify-between items-center bg-white/40 transition-all duration-300">
+            <div id="sidebar-right-header" class="p-8 border-b border-white/40 flex justify-between items-center bg-white/20 transition-all duration-300">
                 <div class="sidebar-right-text transition-all duration-300">
                     <h2 class="text-xl font-black text-slate-800 whitespace-nowrap">Pesan Masuk</h2>
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1 whitespace-nowrap">Umpan Validasi Cuti</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <div class="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-xs font-black shadow-sm sidebar-right-text whitespace-nowrap" id="badge-cuti-pending">0</div>
+                    <div class="neu-pressed bg-transparent text-rose-600 px-3 py-1 rounded-full text-xs font-black sidebar-right-text whitespace-nowrap" id="badge-cuti-pending">0</div>
                     
-                    <button onclick="toggleRightSidebar()" class="w-10 h-10 flex items-center justify-center bg-white/60 hover:bg-white text-indigo-600 rounded-xl border border-white shadow-sm transition-all shrink-0" title="Buka/Tutup Panel Pesan">
+                    <button onclick="toggleRightSidebar()" class="neu-button w-10 h-10 flex items-center justify-center bg-white/50 text-indigo-600 rounded-xl shrink-0" title="Buka/Tutup Panel Pesan">
                         <svg id="sidebar-right-arrow" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
                     </button>
                 </div>
@@ -239,35 +268,34 @@
                 </div>
 
             <div id="sidebar-right-collapsed" class="hidden flex-col items-center flex-grow pt-8 gap-6 transition-all duration-300">
-                <div class="bg-rose-100 text-rose-600 w-10 h-10 flex items-center justify-center rounded-xl text-xs font-black shadow-sm border border-rose-200" id="badge-cuti-pending-mini">0</div>
+                <div class="neu-pressed bg-transparent text-rose-600 w-10 h-10 flex items-center justify-center rounded-xl text-xs font-black" id="badge-cuti-pending-mini">0</div>
                 <div style="writing-mode: vertical-rl; text-orientation: mixed;" class="text-slate-400 font-black tracking-[0.2em] uppercase text-[10px] rotate-180 opacity-60">
                     PESAN VALIDASI CUTI
                 </div>
             </div>
-
         </aside>
 
     </div>
 
     <div id="form-modal" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center p-4 z-[100] transition-all">
-        <div class="inner-glass-card rounded-[2rem] max-w-sm w-full border border-white/60 overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0 duration-200" id="modal-container">
+        <div class="inner-glass-card rounded-[2.5rem] max-w-sm w-full overflow-hidden transform transition-all scale-95 opacity-0 duration-200" id="modal-container">
             
             <div class="p-5 border-b border-white/50 bg-white/40 flex justify-between items-center">
                 <h2 class="text-base font-black text-slate-800" id="form-title">Tambah Pegawai</h2>
-                <button onclick="closeFormModal()" class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-200/50 hover:bg-slate-300/50 text-slate-600 font-bold transition-colors">&times;</button>
+                <button onclick="closeFormModal()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
             </div>
             
-            <form id="karyawan-form" class="p-5 space-y-4 bg-white/20">
+            <form id="karyawan-form" class="p-6 space-y-5 bg-white/20">
                 <input type="hidden" id="karyawan-id">
                 
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Nama Lengkap</label>
-                        <input type="text" id="nama" required class="w-full px-3 py-2.5 bg-white/70 border border-white rounded-xl font-bold text-slate-800 text-xs focus:ring-2 focus:ring-indigo-100 outline-none">
+                        <input type="text" id="nama" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Divisi</label>
-                        <select id="departemen" required class="w-full px-3 py-2.5 bg-white/70 border border-white rounded-xl font-bold text-slate-800 text-xs focus:ring-2 focus:ring-indigo-100 outline-none cursor-pointer">
+                        <select id="departemen" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs cursor-pointer">
                             <option value="">Pilih Divisi...</option>
                             <option value="IT">IT</option>
                             <option value="Finance">Finance</option>
@@ -278,25 +306,25 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Gaji Pokok (Rp)</label>
-                        <input type="number" id="gaji" required min="0" class="w-full px-3 py-2.5 bg-white/70 border border-white rounded-xl font-bold text-slate-800 text-xs focus:ring-2 focus:ring-indigo-100 outline-none">
+                        <input type="number" id="gaji" required min="0" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
                     </div>
                 </div>
 
-                <div class="p-4 bg-indigo-50/80 rounded-xl border border-indigo-100 space-y-3">
+                <div class="p-4 bg-indigo-50/50 rounded-2xl border border-white/50 space-y-3">
                     <h3 class="text-[9px] font-black text-indigo-700 uppercase tracking-widest">Kredensial Login</h3>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-600 mb-1">Username</label>
-                        <input type="text" id="username" class="w-full px-3 py-2 bg-white border border-transparent rounded-lg font-bold text-xs outline-none focus:border-indigo-300">
+                        <input type="text" id="username" class="neu-pressed w-full px-3 py-2 font-bold text-xs bg-white/40">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-600 mb-1">Kata Sandi</label>
-                        <input type="password" id="password" class="w-full px-3 py-2 bg-white border border-transparent rounded-lg font-bold text-xs outline-none focus:border-indigo-300">
+                        <input type="password" id="password" class="neu-pressed w-full px-3 py-2 font-bold text-xs bg-white/40">
                     </div>
                 </div>
 
-                <div class="pt-2 flex gap-2">
-                    <button type="button" onclick="closeFormModal()" class="w-1/3 bg-white/60 hover:bg-white text-slate-600 font-bold py-2.5 rounded-xl border border-white text-xs transition-all shadow-sm">Batal</button>
-                    <button type="submit" class="w-2/3 bg-[#5c43d6] hover:bg-[#4a34b2] text-white font-black py-2.5 rounded-xl text-xs transition-all shadow-md shadow-indigo-200">Simpan Data</button>
+                <div class="pt-2 flex gap-3">
+                    <button type="button" onclick="closeFormModal()" class="neu-button w-1/3 bg-white/60 text-slate-600 font-bold py-3 rounded-xl text-xs">Batal</button>
+                    <button type="submit" class="neu-button w-2/3 bg-[#5c43d6] text-white font-black py-3 rounded-xl text-xs">Simpan Data</button>
                 </div>
             </form>
         </div>
@@ -312,7 +340,6 @@
         const statusIcon = document.getElementById('status-icon');
         const statusText = document.getElementById('status-text');
 
-        // Elemen Filter & Sort
         const searchInput = document.getElementById('search-input');
         const filterDepartemen = document.getElementById('filter-departemen');
         const sortData = document.getElementById('sort-data');
@@ -320,14 +347,13 @@
         let globalKaryawanData = [];
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
-        // --- SISTEM NOTIFIKASI TOAST ---
         function showStatus(message, isError = false) {
             statusText.textContent = message;
             if(isError) {
-                statusBadge.className = "fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-rose-100 text-rose-800 border border-rose-200 shadow-xl z-[9999] transform transition-all flex items-center gap-3";
+                statusBadge.className = "neu-icon fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-rose-100 text-rose-800 z-[9999] transform transition-all flex items-center gap-3";
                 statusIcon.innerHTML = `<svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
             } else {
-                statusBadge.className = "fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-xl z-[9999] transform transition-all flex items-center gap-3";
+                statusBadge.className = "neu-icon fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 z-[9999] transform transition-all flex items-center gap-3";
                 statusIcon.innerHTML = `<svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
             }
             statusBadge.classList.remove('hidden', 'translate-y-4', 'opacity-0');
@@ -337,7 +363,6 @@
             }, 3500);
         }
 
-        // --- FITUR SIDEBAR INTERAKTIF (KIRI) ---
         let isLeftSidebarExpanded = false;
         function toggleLeftSidebar() {
             const sidebar = document.getElementById('sidebar-left');
@@ -353,32 +378,19 @@
                 header.classList.remove('justify-center');
                 header.classList.add('justify-start');
 
-                texts.forEach(t => {
-                    t.classList.remove('hidden', 'opacity-0');
-                    t.classList.add('inline-block', 'opacity-100');
-                });
-                btns.forEach(btn => {
-                    btn.classList.remove('w-12', 'mx-auto', 'justify-center');
-                    btn.classList.add('w-full', 'justify-start', 'px-5');
-                });
+                texts.forEach(t => { t.classList.remove('hidden', 'opacity-0'); t.classList.add('inline-block', 'opacity-100'); });
+                btns.forEach(btn => { btn.classList.remove('w-12', 'mx-auto', 'justify-center'); btn.classList.add('w-full', 'justify-start', 'px-5'); });
             } else {
                 sidebar.classList.remove('w-64');
                 sidebar.classList.add('w-24');
                 header.classList.remove('justify-start');
                 header.classList.add('justify-center');
 
-                texts.forEach(t => {
-                    t.classList.remove('inline-block', 'opacity-100');
-                    t.classList.add('hidden', 'opacity-0');
-                });
-                btns.forEach(btn => {
-                    btn.classList.remove('w-full', 'justify-start', 'px-5');
-                    btn.classList.add('w-12', 'mx-auto', 'justify-center');
-                });
+                texts.forEach(t => { t.classList.remove('inline-block', 'opacity-100'); t.classList.add('hidden', 'opacity-0'); });
+                btns.forEach(btn => { btn.classList.remove('w-full', 'justify-start', 'px-5'); btn.classList.add('w-12', 'mx-auto', 'justify-center'); });
             }
         }
 
-        // --- FITUR SIDEBAR INTERAKTIF (KANAN) ---
         let isRightSidebarExpanded = true;
         function toggleRightSidebar() {
             const sidebar = document.getElementById('sidebar-right');
@@ -391,53 +403,34 @@
             isRightSidebarExpanded = !isRightSidebarExpanded;
 
             if (isRightSidebarExpanded) {
-                // Mode Diperluas
                 sidebar.classList.remove('w-24');
                 sidebar.classList.add('w-[380px]');
-
                 header.classList.remove('justify-center', 'px-0');
-                header.classList.add('justify-between', 'px-8'); // kembalikan padding ori
-
-                texts.forEach(t => {
-                    t.classList.remove('hidden', 'opacity-0');
-                    t.classList.add('block', 'opacity-100');
-                });
+                header.classList.add('justify-between', 'px-8'); 
+                texts.forEach(t => { t.classList.remove('hidden', 'opacity-0'); t.classList.add('block', 'opacity-100'); });
                 feed.classList.remove('hidden', 'opacity-0');
                 feed.classList.add('block', 'opacity-100');
-
                 collapsedIndicator.classList.remove('flex');
                 collapsedIndicator.classList.add('hidden');
-                
                 arrow.classList.remove('rotate-180');
             } else {
-                // Mode Diciutkan
                 sidebar.classList.remove('w-[380px]');
                 sidebar.classList.add('w-24');
-
                 header.classList.remove('justify-between', 'px-8');
                 header.classList.add('justify-center', 'px-0');
-
-                texts.forEach(t => {
-                    t.classList.remove('block', 'opacity-100');
-                    t.classList.add('hidden', 'opacity-0');
-                });
+                texts.forEach(t => { t.classList.remove('block', 'opacity-100'); t.classList.add('hidden', 'opacity-0'); });
                 feed.classList.remove('block', 'opacity-100');
                 feed.classList.add('hidden', 'opacity-0');
-
                 collapsedIndicator.classList.remove('hidden');
                 collapsedIndicator.classList.add('flex');
-                
-                arrow.classList.add('rotate-180'); // Putar ikon panah ke kiri
+                arrow.classList.add('rotate-180'); 
             }
         }
 
-        // --- SISTEM TABULASI SPA ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
-            
-            const title = tabId === 'tab-dashboard' ? 'Dasbor Analitik' : 'Direktori Karyawan';
-            document.getElementById('header-title').textContent = title;
+            document.getElementById('header-title').textContent = tabId === 'tab-dashboard' ? 'Dasbor Analitik' : 'Direktori Karyawan';
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('text-white', 'bg-white/20', 'shadow-inner', 'border', 'border-white/10');
@@ -448,7 +441,6 @@
             activeBtn.classList.add('text-white', 'bg-white/20', 'shadow-inner', 'border', 'border-white/10');
         }
 
-        // --- MANAJEMEN MODAL KARYAWAN ---
         function openFormModal() {
             document.getElementById('form-modal').classList.remove('hidden');
             setTimeout(() => {
@@ -470,7 +462,6 @@
             }, 200);
         }
 
-        // --- DATA KARYAWAN & FILTER/SORT ---
         async function fetchKaryawan() {
             try {
                 const response = await fetch(API_URL, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -487,20 +478,17 @@
             } catch (error) { showStatus('Gagal memuat data karyawan', true); }
         }
 
-        // Algoritma Penyaringan (Filter) dan Pengurutan (Sort)
         function applyFiltersAndSort() {
             const keyword = searchInput.value.toLowerCase();
             const dept = filterDepartemen.value;
             const sortMethod = sortData.value;
 
-            // 1. Filter nama dan departemen
             let result = globalKaryawanData.filter(k => {
-                const matchName = k.nama.toLowerCase().includes(keyword); // Pencarian murni via nama
+                const matchName = k.nama.toLowerCase().includes(keyword); 
                 const matchDept = dept === "" || k.departemen === dept;
                 return matchName && matchDept;
             });
 
-            // 2. Sorting
             result.sort((a, b) => {
                 if (sortMethod === 'terbaru') return b.id - a.id;
                 if (sortMethod === 'terlama') return a.id - b.id;
@@ -512,7 +500,6 @@
             renderKaryawanTable(result);
         }
 
-        // Event listener untuk Filter dan Pencarian
         searchInput.addEventListener('input', applyFiltersAndSort);
         filterDepartemen.addEventListener('change', applyFiltersAndSort);
         sortData.addEventListener('change', applyFiltersAndSort);
@@ -530,7 +517,7 @@
                     <tr class="hover:bg-white/50 transition-colors border-b border-white/30 last:border-0">
                         <td class="px-6 py-5">
                             <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-xl bg-white text-[#5c43d6] font-black text-xs flex items-center justify-center shadow-sm border border-white/50 shrink-0">${initial}</div>
+                                <div class="neu-icon w-10 h-10 rounded-xl bg-white text-[#5c43d6] font-black text-xs flex items-center justify-center shrink-0 border-2 border-[#dce4f0]">${initial}</div>
                                 <div>
                                     <div class="font-black text-slate-800 text-sm">${k.nama}</div>
                                     <div class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">ID: #${k.id} &bull; @${k.username || 'N/A'}</div>
@@ -540,15 +527,14 @@
                         <td class="px-6 py-5"><span class="px-3 py-1.5 bg-white border border-white/50 text-slate-600 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-sm">${k.departemen}</span></td>
                         <td class="px-6 py-5 text-slate-800 font-black">${formatRupiah(k.gaji)}</td>
                         <td class="px-6 py-5 text-right space-x-2">
-                            <button onclick="editKaryawan(${k.id}, '${k.nama}', '${k.departemen}', ${k.gaji})" class="bg-white hover:bg-slate-100 text-indigo-600 px-3 py-2 rounded-xl font-bold text-[11px] uppercase tracking-wider shadow-sm transition-colors">Edit</button>
-                            <button onclick="deleteKaryawan(${k.id})" class="bg-white hover:bg-rose-50 text-rose-500 px-3 py-2 rounded-xl font-bold text-[11px] uppercase tracking-wider shadow-sm transition-colors">Hapus</button>
+                            <button onclick="editKaryawan(${k.id}, '${k.nama}', '${k.departemen}', ${k.gaji})" class="neu-button bg-white text-indigo-600 px-4 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-wider">Edit</button>
+                            <button onclick="deleteKaryawan(${k.id})" class="neu-button bg-white text-rose-500 px-4 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-wider">Hapus</button>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        // --- CRUD KARYAWAN ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('karyawan-id').value;
@@ -591,7 +577,6 @@
             } catch (error) { showStatus('Penghapusan gagal.', true) }
         }
 
-        // --- SISTEM PESAN CUTI (RIGHT PANEL FEED) ---
         async function fetchSemuaCuti() {
             try {
                 const response = await fetch('/api/cuti', { headers: { 'Authorization': `Bearer ${token}` } });
@@ -615,34 +600,33 @@
                             : (c.status === 'DISETUJUI' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700');
                         
                         const actionHTML = isPending ? `
-                            <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100">
-                                <button onclick="prosesCuti(${c.id}, 'DISETUJUI')" class="flex-1 bg-[#5c43d6] hover:bg-[#4a34b2] text-white text-[11px] font-black uppercase tracking-widest py-2 rounded-xl transition-colors">Setuju</button>
-                                <button onclick="prosesCuti(${c.id}, 'DITOLAK')" class="flex-1 bg-slate-100 hover:bg-rose-100 hover:text-rose-600 text-slate-500 text-[11px] font-black uppercase tracking-widest py-2 rounded-xl transition-colors">Tolak</button>
+                            <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100/50">
+                                <button onclick="prosesCuti(${c.id}, 'DISETUJUI')" class="neu-button flex-1 bg-[#5c43d6] text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Setuju</button>
+                                <button onclick="prosesCuti(${c.id}, 'DITOLAK')" class="neu-button flex-1 bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Tolak</button>
                             </div>
                         ` : '';
 
                         cutiContainer.innerHTML += `
-                            <div class="inner-glass-card rounded-3xl p-5 mb-4">
+                            <div class="inner-glass-card rounded-3xl p-5 mb-5">
                                 <div class="flex justify-between items-start mb-3">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-black text-xs shrink-0">@</div>
+                                        <div class="neu-icon w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-black text-xs shrink-0 border border-[#dce4f0]">@</div>
                                         <div>
                                             <p class="font-black text-slate-800 text-sm leading-none">${c.usernameKaryawan}</p>
-                                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${c.tanggalMulai}</span>
+                                            <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">${c.tanggalMulai}</span>
                                         </div>
                                     </div>
                                     <span class="px-2.5 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase ${statusStyle} shrink-0">${c.status}</span>
                                 </div>
-                                <p class="text-sm font-semibold text-slate-600 bg-white/50 p-3 rounded-xl border border-white/60 line-clamp-3">"${c.alasan}"</p>
-                                <div class="mt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                    Sampai: ${c.tanggalSelesai}
+                                <p class="text-xs font-bold text-slate-600 neu-pressed p-4 rounded-xl line-clamp-3 leading-relaxed">"${c.alasan}"</p>
+                                <div class="mt-4 mb-1 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+                                    S/D TANGGAL: <span class="text-slate-600">${c.tanggalSelesai}</span>
                                 </div>
                                 ${actionHTML}
                             </div>
                         `;
                     });
 
-                    // Update kedua indikator badge (Expanded dan Collapsed)
                     document.getElementById('badge-cuti-pending').textContent = pendingCount + ' Baru';
                     document.getElementById('badge-cuti-pending-mini').textContent = pendingCount;
                 }
@@ -667,7 +651,6 @@
             }
         }
 
-        // Inisialisasi Eksekusi Pemanggilan API Pertama
         fetchKaryawan();
         fetchSemuaCuti(); 
     </script>
