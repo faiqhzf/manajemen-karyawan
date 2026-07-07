@@ -1,7 +1,9 @@
 package com.karyawan.karyawan.service;
 
 import com.karyawan.karyawan.dto.CutiRequestDTO;
+import com.karyawan.karyawan.dto.CutiResponseDTO;
 import com.karyawan.karyawan.model.Cuti;
+import com.karyawan.karyawan.model.StatusCuti;
 import com.karyawan.karyawan.repository.CutiRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,12 +20,16 @@ public class CutiService {
         this.cutiRepository = cutiRepository;
     }
 
-    public Cuti ajukanCuti(String username, CutiRequestDTO dto) {
-        
+    // Metode internal untuk akses Entitas murni (tidak diekspos ke Controller)
+    private Cuti findEntityById(int id) {
+        return cutiRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Data cuti tidak ditemukan"));
+    }
+
+    public CutiResponseDTO ajukanCuti(String username, CutiRequestDTO dto) {
         LocalDate tglMulai;
         LocalDate tglSelesai;
         
-
         try {
             tglMulai = LocalDate.parse(dto.getTanggalMulai());
             tglSelesai = LocalDate.parse(dto.getTanggalSelesai());
@@ -35,31 +41,38 @@ public class CutiService {
             throw new RuntimeException("Format tanggal tidak valid. Sistem menolak permintaan.");
         }
 
-
         Cuti cuti = new Cuti();
         cuti.setUsernameKaryawan(username);
         cuti.setTanggalMulai(tglMulai);
         cuti.setTanggalSelesai(tglSelesai);
         cuti.setAlasan(dto.getAlasan());
-        cuti.setStatus("MENUNGGU");
+        cuti.setStatus(StatusCuti.MENUNGGU);
         
-        return cutiRepository.save(cuti);
+        Cuti savedCuti = cutiRepository.save(cuti);
+        return CutiResponseDTO.fromEntity(savedCuti);
     }
 
-
-    public List<Cuti> getRiwayatCutiSaya(String username) {
-        return cutiRepository.findByUsernameKaryawan(username);
+    public List<CutiResponseDTO> getRiwayatCutiSaya(String username) {
+        return cutiRepository.findByUsernameKaryawan(username)
+                .stream()
+                .map(CutiResponseDTO::fromEntity)
+                .toList();
     }
 
-    public List<Cuti> getAllCuti() {
-        return cutiRepository.findAll();
+    public List<CutiResponseDTO> getAllCuti() {
+        return cutiRepository.findAll()
+                .stream()
+                .map(CutiResponseDTO::fromEntity)
+                .toList();
     }
 
-    public Cuti updateStatusCuti(int id, String statusBaru) {
-        Cuti cuti = cutiRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Data cuti tidak ditemukan"));
+    public CutiResponseDTO updateStatusCuti(int id, String statusBaru) {
+        Cuti cuti = findEntityById(id);
         
-        cuti.setStatus(statusBaru.toUpperCase());
-        return cutiRepository.save(cuti);
+        // Konversi String dari request menjadi nilai Enum StatusCuti
+        cuti.setStatus(StatusCuti.valueOf(statusBaru.toUpperCase()));
+        
+        Cuti updatedCuti = cutiRepository.save(cuti);
+        return CutiResponseDTO.fromEntity(updatedCuti);
     }
 }

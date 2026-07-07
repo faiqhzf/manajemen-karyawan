@@ -1,7 +1,7 @@
 package com.karyawan.karyawan.controller;
 
 import com.karyawan.karyawan.dto.CutiRequestDTO;
-import com.karyawan.karyawan.model.Cuti;
+import com.karyawan.karyawan.dto.CutiResponseDTO;
 import com.karyawan.karyawan.service.CutiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,16 +23,12 @@ public class CutiController {
         this.cutiService = cutiService;
     }
 
-    // =========================================
-    // ENDPOINT UNTUK KARYAWAN
-    // =========================================
-
     @PostMapping
     @PreAuthorize("hasRole('KARYAWAN')")
     public ResponseEntity<?> ajukanCuti(@Valid @RequestBody CutiRequestDTO dto, Authentication authentication) {
         try {
             String username = authentication.getName();
-            Cuti cuti = cutiService.ajukanCuti(username, dto);
+            CutiResponseDTO cuti = cutiService.ajukanCuti(username, dto);
             return ResponseEntity.ok(cuti);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -41,18 +37,14 @@ public class CutiController {
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('KARYAWAN')")
-    public ResponseEntity<List<Cuti>> getCutiSaya(Authentication authentication) {
+    public ResponseEntity<List<CutiResponseDTO>> getCutiSaya(Authentication authentication) {
         String username = authentication.getName();
         return ResponseEntity.ok(cutiService.getRiwayatCutiSaya(username));
     }
 
-    // =========================================
-    // ENDPOINT UNTUK HRD
-    // =========================================
-
     @GetMapping
     @PreAuthorize("hasRole('HRD')")
-    public ResponseEntity<List<Cuti>> getAllCuti() {
+    public ResponseEntity<List<CutiResponseDTO>> getAllCuti() {
         return ResponseEntity.ok(cutiService.getAllCuti());
     }
 
@@ -61,7 +53,7 @@ public class CutiController {
     public ResponseEntity<?> updateStatus(@PathVariable int id, @Valid @RequestBody Map<String, String> payload) {
         try {
             String status = payload.get("status");
-            Cuti cuti = cutiService.updateStatusCuti(id, status);
+            CutiResponseDTO cuti = cutiService.updateStatusCuti(id, status);
             return ResponseEntity.ok(cuti);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

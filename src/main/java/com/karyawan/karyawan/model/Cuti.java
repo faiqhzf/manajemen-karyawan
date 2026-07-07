@@ -23,12 +23,13 @@ public class Cuti {
     @Column(nullable = false)
     private String alasan;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status; // "MENUNGGU", "DISETUJUI", "DITOLAK"
+    private StatusCuti status = StatusCuti.MENUNGGU;
 
     public Cuti() {}
 
-    public Cuti(String usernameKaryawan, LocalDate tanggalMulai, LocalDate tanggalSelesai, String alasan, String status) {
+    public Cuti(String usernameKaryawan, LocalDate tanggalMulai, LocalDate tanggalSelesai, String alasan, StatusCuti status) {
         this.usernameKaryawan = usernameKaryawan;
         this.tanggalMulai = tanggalMulai;
         this.tanggalSelesai = tanggalSelesai;
@@ -52,6 +53,6 @@ public class Cuti {
     public String getAlasan() { return alasan; }
     public void setAlasan(String alasan) { this.alasan = alasan; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public StatusCuti getStatus() { return status; }
+    public void setStatus(StatusCuti status) { this.status = status; }
 }

@@ -1,6 +1,7 @@
 package com.karyawan.karyawan.service;
 
 import com.karyawan.karyawan.dto.KaryawanRequestDTO;
+import com.karyawan.karyawan.dto.KaryawanResponseDTO;
 import com.karyawan.karyawan.exception.ResourceNotFoundException;
 import com.karyawan.karyawan.model.Karyawan;
 import com.karyawan.karyawan.model.Pengguna;
@@ -9,13 +10,11 @@ import com.karyawan.karyawan.repository.KaryawanRepository;
 import com.karyawan.karyawan.repository.PenggunaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,32 +25,45 @@ public class KaryawanService {
 
     private static final Logger log = LoggerFactory.getLogger(KaryawanService.class);
 
-    @Autowired
-    private KaryawanRepository karyawanRepository;
+    private final KaryawanRepository karyawanRepository;
+    private final PenggunaRepository penggunaRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PenggunaRepository penggunaRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    public List<Karyawan> getAllKaryawan() {
-        log.info("Mengambil seluruh data karyawan dari database");
-        return karyawanRepository.findAll();
+    // Penerapan Constructor Injection
+    public KaryawanService(KaryawanRepository karyawanRepository, 
+                           PenggunaRepository penggunaRepository, 
+                           PasswordEncoder passwordEncoder) {
+        this.karyawanRepository = karyawanRepository;
+        this.penggunaRepository = penggunaRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public Karyawan getKaryawanById(long id) {
+    // Metode internal untuk mengambil Entity asli dari database (Digunakan oleh Update & Delete)
+    private Karyawan findEntityById(long id) {
         return karyawanRepository.findById((int) id)
                 .orElseThrow(() -> new ResourceNotFoundException("Data karyawan dengan ID " + id + " tidak ditemukan"));
     }
 
-    public Karyawan getKaryawanByUsername(String username) {
-        return karyawanRepository.findByUsername(username)
+    public List<KaryawanResponseDTO> getAllKaryawan() {
+        log.info("Mengambil seluruh data karyawan dari database");
+        return karyawanRepository.findAll()
+                .stream()
+                .map(KaryawanResponseDTO::fromEntity) 
+                .toList();
+    }
+
+    public KaryawanResponseDTO getKaryawanById(long id) {
+        return KaryawanResponseDTO.fromEntity(findEntityById(id));
+    }
+
+    public KaryawanResponseDTO getKaryawanByUsername(String username) {
+        Karyawan karyawan = karyawanRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Profil karyawan tidak ditemukan untuk username: " + username));
+        return KaryawanResponseDTO.fromEntity(karyawan);
     }
 
     @Transactional
-    public Karyawan tambahKaryawan(KaryawanRequestDTO dto) {
+    public KaryawanResponseDTO tambahKaryawan(KaryawanRequestDTO dto) {
         log.info("Memulai proses penambahan karyawan baru: {}", dto.getNama());
         
         Karyawan karyawan = new Karyawan();
@@ -74,14 +86,17 @@ public class KaryawanService {
             penggunaRepository.save(pengguna);
             log.info("Akun pengguna berhasil dibuat untuk username: {}", dto.getUsername());
         }
-        return savedKaryawan;
+        
+        // Kembalikan DTO
+        return KaryawanResponseDTO.fromEntity(savedKaryawan);
     }
 
     @Transactional
-    public Karyawan updateKaryawan(long id, KaryawanRequestDTO dto) {
+    public KaryawanResponseDTO updateKaryawan(long id, KaryawanRequestDTO dto) {
         log.info("Memperbarui data karyawan dengan ID: {}", id);
         
-        Karyawan karyawan = getKaryawanById(id);
+        // Memanggil fungsi internal untuk memanipulasi entitas
+        Karyawan karyawan = findEntityById(id);
         karyawan.setNama(dto.getNama());
         karyawan.setDepartemen(dto.getDepartemen());
         karyawan.setGaji(dto.getGaji());
@@ -106,48 +121,60 @@ public class KaryawanService {
                 }
             );
         }
-        return savedKaryawan;
+        
+        // Kembalikan DTO
+        return KaryawanResponseDTO.fromEntity(savedKaryawan);
     }
 
     public void deleteKaryawan(long id) {
         log.info("Menghapus data karyawan dengan ID: {}", id);
-        Karyawan karyawan = getKaryawanById(id); 
+        Karyawan karyawan = findEntityById(id); 
         karyawanRepository.delete(karyawan);
     }
     
-    public List<Karyawan> getKaryawanByDepartemen(String departemen) {
+    // --- FUNGSI ANALITIK (Dikonversi ke DTO) ---
+
+    public List<KaryawanResponseDTO> getKaryawanByDepartemen(String departemen) {
         return karyawanRepository.findAll().stream()
                 .filter(k -> k.getDepartemen().equalsIgnoreCase(departemen))
+                .map(KaryawanResponseDTO::fromEntity)
                 .toList();
     }
 
-    public List<Karyawan> getKaryawanTermahal() {
+    public List<KaryawanResponseDTO> getKaryawanTermahal() {
         return karyawanRepository.findAll().stream()
                 .sorted((k1, k2) -> k2.getGaji().compareTo(k1.getGaji()))
+                .map(KaryawanResponseDTO::fromEntity)
                 .toList();
     }
 
     public BigDecimal getTotalGajiByDepartemen(String departemen) {
         return karyawanRepository.findAll().stream()
                 .filter(k -> k.getDepartemen().equalsIgnoreCase(departemen))
-                .map(k -> k.getGaji())
-                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
+                .map(Karyawan::getGaji)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public Set<String> getDepartemenUnik() {
         return karyawanRepository.findAll().stream()
-                .map(k -> k.getDepartemen())
+                .map(Karyawan::getDepartemen)
                 .collect(Collectors.toSet());
     }
 
-    public Map<String, List<Karyawan>> getKaryawanGrupByDepartemen() {
+    public Map<String, List<KaryawanResponseDTO>> getKaryawanGrupByDepartemen() {
         return karyawanRepository.findAll().stream()
-                .collect(Collectors.groupingBy(k -> k.getDepartemen()));
+                .collect(Collectors.groupingBy(
+                        Karyawan::getDepartemen,
+                        Collectors.mapping(KaryawanResponseDTO::fromEntity, Collectors.toList())
+                ));
     }
 
-    public List<Karyawan> getDaftarKaryawanTerbaru() {
-        return new ArrayList<>(karyawanRepository.findAll().stream()
-                .collect(Collectors.toMap(k -> k.getId(), k -> k, (exist, replace) -> replace))
-                .values());
+    public List<KaryawanResponseDTO> getDaftarKaryawanTerbaru() {
+        return karyawanRepository.findAll().stream()
+                .collect(Collectors.toMap(Karyawan::getId, k -> k, (exist, replace) -> replace))
+                .values()
+                .stream()
+                .map(KaryawanResponseDTO::fromEntity)
+                .toList();
     }
 }

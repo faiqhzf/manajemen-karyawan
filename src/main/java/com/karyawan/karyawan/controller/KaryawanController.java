@@ -1,11 +1,10 @@
 package com.karyawan.karyawan.controller;
 
 import com.karyawan.karyawan.dto.KaryawanRequestDTO;
-import com.karyawan.karyawan.model.Karyawan;
+import com.karyawan.karyawan.dto.KaryawanResponseDTO;
 import com.karyawan.karyawan.service.KaryawanService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -25,34 +24,37 @@ public class KaryawanController {
 
     private static final Logger log = LoggerFactory.getLogger(KaryawanController.class);
 
-    @Autowired
-    private KaryawanService service;
+    private final KaryawanService service;
+
+    public KaryawanController(KaryawanService service) {
+        this.service = service;
+    }
 
     @GetMapping
     @PreAuthorize("hasRole('HRD')")
-    public ResponseEntity<List<Karyawan>> getAll() {
+    public ResponseEntity<List<KaryawanResponseDTO>> getAll() {
         return ResponseEntity.ok(service.getAllKaryawan());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('HRD')")
-    public ResponseEntity<Karyawan> getById(@PathVariable long id) {
+    public ResponseEntity<KaryawanResponseDTO> getById(@PathVariable long id) {
         return ResponseEntity.ok(service.getKaryawanById(id));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('HRD')")
-    public ResponseEntity<Karyawan> addKaryawan(@Valid @RequestBody KaryawanRequestDTO dto) {
+    public ResponseEntity<KaryawanResponseDTO> addKaryawan(@Valid @RequestBody KaryawanRequestDTO dto) {
         log.info("Menerima request penambahan karyawan: {}", dto.getNama());
-        Karyawan karyawan = service.tambahKaryawan(dto);
+        KaryawanResponseDTO karyawan = service.tambahKaryawan(dto);
         return ResponseEntity.ok(karyawan);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('HRD')")
-    public ResponseEntity<Karyawan> edit(@PathVariable long id, @Valid @RequestBody KaryawanRequestDTO dto) {
+    public ResponseEntity<KaryawanResponseDTO> edit(@PathVariable long id, @Valid @RequestBody KaryawanRequestDTO dto) {
         log.info("Menerima request update karyawan ID: {}", id);
-        Karyawan karyawan = service.updateKaryawan(id, dto);
+        KaryawanResponseDTO karyawan = service.updateKaryawan(id, dto);
         return ResponseEntity.ok(karyawan);
     }
 
@@ -65,22 +67,22 @@ public class KaryawanController {
     }
     
     @GetMapping("/me")
-    public ResponseEntity<Karyawan> getMyProfile(Authentication authentication) {
+    public ResponseEntity<KaryawanResponseDTO> getMyProfile(Authentication authentication) {
         String currentUsername = authentication.getName();
         log.info("Menerima request cek profil untuk user: {}", currentUsername);
-        Karyawan karyawan = service.getKaryawanByUsername(currentUsername);
+        KaryawanResponseDTO karyawan = service.getKaryawanByUsername(currentUsername);
         return ResponseEntity.ok(karyawan);
     }
 
     @GetMapping("/filter/{departemen}")
     @PreAuthorize("hasRole('HRD')")
-    public List<Karyawan> filterDepartemen(@PathVariable String departemen) {
+    public List<KaryawanResponseDTO> filterDepartemen(@PathVariable String departemen) {
         return service.getKaryawanByDepartemen(departemen);
     }
 
     @GetMapping("/gaji-tertinggi")
     @PreAuthorize("hasRole('HRD')")
-    public List<Karyawan> sortByGaji() {
+    public List<KaryawanResponseDTO> sortByGaji() {
         return service.getKaryawanTermahal();
     }
 
@@ -101,13 +103,13 @@ public class KaryawanController {
 
     @GetMapping("/grup")
     @PreAuthorize("hasRole('HRD')")
-    public Map<String, List<Karyawan>> getGrupKaryawan() {
+    public Map<String, List<KaryawanResponseDTO>> getGrupKaryawan() {
         return service.getKaryawanGrupByDepartemen();
     }
 
     @GetMapping("/terbaru")
     @PreAuthorize("hasRole('HRD')")
-    public List<Karyawan> getTerbaru() {
+    public List<KaryawanResponseDTO> getTerbaru() {
         return service.getDaftarKaryawanTerbaru();
     }
 }
