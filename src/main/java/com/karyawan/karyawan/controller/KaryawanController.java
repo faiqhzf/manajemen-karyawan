@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/karyawan")
@@ -27,30 +29,35 @@ public class KaryawanController {
     private KaryawanService service;
 
     @GetMapping
+    @PreAuthorize("hasRole('HRD')")
     public ResponseEntity<List<Karyawan>> getAll() {
         return ResponseEntity.ok(service.getAllKaryawan());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('HRD')")
     public ResponseEntity<Karyawan> getById(@PathVariable long id) {
         return ResponseEntity.ok(service.getKaryawanById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Karyawan> addKaryawan(@RequestBody KaryawanRequestDTO dto) {
+    @PreAuthorize("hasRole('HRD')")
+    public ResponseEntity<Karyawan> addKaryawan(@Valid @RequestBody KaryawanRequestDTO dto) {
         log.info("Menerima request penambahan karyawan: {}", dto.getNama());
         Karyawan karyawan = service.tambahKaryawan(dto);
         return ResponseEntity.ok(karyawan);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Karyawan> edit(@PathVariable long id, @RequestBody KaryawanRequestDTO dto) {
+    @PreAuthorize("hasRole('HRD')")
+    public ResponseEntity<Karyawan> edit(@PathVariable long id, @Valid @RequestBody KaryawanRequestDTO dto) {
         log.info("Menerima request update karyawan ID: {}", id);
         Karyawan karyawan = service.updateKaryawan(id, dto);
         return ResponseEntity.ok(karyawan);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('HRD')")
     public ResponseEntity<Void> delete(@PathVariable long id) {
         log.info("Menerima request hapus karyawan ID: {}", id);
         service.deleteKaryawan(id);
@@ -66,16 +73,19 @@ public class KaryawanController {
     }
 
     @GetMapping("/filter/{departemen}")
+    @PreAuthorize("hasRole('HRD')")
     public List<Karyawan> filterDepartemen(@PathVariable String departemen) {
         return service.getKaryawanByDepartemen(departemen);
     }
 
     @GetMapping("/gaji-tertinggi")
+    @PreAuthorize("hasRole('HRD')")
     public List<Karyawan> sortByGaji() {
         return service.getKaryawanTermahal();
     }
 
     @GetMapping("/total-gaji/{departemen}")
+    @PreAuthorize("hasRole('HRD')")
     public String totalGajiDept(@PathVariable String departemen) {
         BigDecimal total = service.getTotalGajiByDepartemen(departemen);
         NumberFormat formatRupiah = NumberFormat.getInstance(Locale.of("id", "ID"));
@@ -84,16 +94,19 @@ public class KaryawanController {
     }
 
     @GetMapping("/departemen")
+    @PreAuthorize("hasRole('HRD')")
     public Set<String> getDepartemen() {
         return service.getDepartemenUnik();
     }
 
     @GetMapping("/grup")
+    @PreAuthorize("hasRole('HRD')")
     public Map<String, List<Karyawan>> getGrupKaryawan() {
         return service.getKaryawanGrupByDepartemen();
     }
 
     @GetMapping("/terbaru")
+    @PreAuthorize("hasRole('HRD')")
     public List<Karyawan> getTerbaru() {
         return service.getDaftarKaryawanTerbaru();
     }

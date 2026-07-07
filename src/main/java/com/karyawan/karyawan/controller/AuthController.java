@@ -15,6 +15,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
+import jakarta.validation.Valid;
+
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -35,36 +40,33 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> registerUser( @Valid @RequestBody RegisterRequest request) {
         if (penggunaRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Error: Username sudah digunakan!");
+            return ResponseEntity.badRequest().body(Map.of("error", "Username sudah digunakan!"));
         }
 
-        // Enkripsi password menggunakan BCrypt sebelum disimpan ke MariaDB
         Pengguna pengguna = new Pengguna(
                 request.getUsername(),
                 passwordEncoder.encode(request.getPassword()),
-                request.getRole().toUpperCase()
+                request.getRole() 
         );
 
         penggunaRepository.save(pengguna);
-        return ResponseEntity.ok("Registrasi berhasil untuk user: " + request.getUsername());
+        return ResponseEntity.ok(Map.of("message", "Registrasi berhasil untuk user: " + request.getUsername()));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest request) {
-        // Autentikasi username dan password
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         
-        // Generate JWT Token
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        
         String jwt = jwtUtils.generateJwtToken(userDetails);
         
-        // Ambil role dari UserDetails
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), role));

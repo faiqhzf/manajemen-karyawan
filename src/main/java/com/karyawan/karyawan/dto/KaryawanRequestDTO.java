@@ -1,10 +1,22 @@
 package com.karyawan.karyawan.dto;
 import java.math.BigDecimal;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+
+
 public class KaryawanRequestDTO {
+    @NotBlank(message = "Nama karyawan tidak boleh kosong")
     private String nama;
+
+    @NotBlank(message = "Departemen tidak boleh kosong")
     private String departemen;
+
+    @NotNull(message = "Gaji tidak boleh kosong")
+    @Min(value = 0, message = "Gaji tidak boleh bernilai negatif")
     private BigDecimal gaji;
+    
     private String username;
     private String password;
 

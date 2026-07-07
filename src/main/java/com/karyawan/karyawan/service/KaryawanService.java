@@ -4,6 +4,7 @@ import com.karyawan.karyawan.dto.KaryawanRequestDTO;
 import com.karyawan.karyawan.exception.ResourceNotFoundException;
 import com.karyawan.karyawan.model.Karyawan;
 import com.karyawan.karyawan.model.Pengguna;
+import com.karyawan.karyawan.model.Role;
 import com.karyawan.karyawan.repository.KaryawanRepository;
 import com.karyawan.karyawan.repository.PenggunaRepository;
 import org.slf4j.Logger;
@@ -23,7 +24,6 @@ import java.util.stream.Collectors;
 @Service
 public class KaryawanService {
 
-    
     private static final Logger log = LoggerFactory.getLogger(KaryawanService.class);
 
     @Autowired
@@ -42,7 +42,6 @@ public class KaryawanService {
 
     public Karyawan getKaryawanById(long id) {
         return karyawanRepository.findById((int) id)
-                // Menggunakan Custom Exception
                 .orElseThrow(() -> new ResourceNotFoundException("Data karyawan dengan ID " + id + " tidak ditemukan"));
     }
 
@@ -71,7 +70,7 @@ public class KaryawanService {
             Pengguna pengguna = new Pengguna();
             pengguna.setUsername(dto.getUsername());
             pengguna.setPassword(passwordEncoder.encode(dto.getPassword()));
-            pengguna.setRole("ROLE_KARYAWAN");
+            pengguna.setRole(Role.KARYAWAN);
             penggunaRepository.save(pengguna);
             log.info("Akun pengguna berhasil dibuat untuk username: {}", dto.getUsername());
         }
@@ -101,7 +100,7 @@ public class KaryawanService {
                     Pengguna penggunaBaru = new Pengguna();
                     penggunaBaru.setUsername(dto.getUsername());
                     penggunaBaru.setPassword(passwordEncoder.encode(dto.getPassword()));
-                    penggunaBaru.setRole("ROLE_KARYAWAN");
+                    penggunaBaru.setRole(Role.KARYAWAN);
                     penggunaRepository.save(penggunaBaru);
                     log.info("Akun baru berhasil diregistrasi saat update untuk username: {}", dto.getUsername());
                 }
@@ -115,7 +114,6 @@ public class KaryawanService {
         Karyawan karyawan = getKaryawanById(id); 
         karyawanRepository.delete(karyawan);
     }
-
     
     public List<Karyawan> getKaryawanByDepartemen(String departemen) {
         return karyawanRepository.findAll().stream()

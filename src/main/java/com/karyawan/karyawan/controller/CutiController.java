@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/cuti")
 public class CutiController {
@@ -27,7 +29,7 @@ public class CutiController {
 
     @PostMapping
     @PreAuthorize("hasRole('KARYAWAN')")
-    public ResponseEntity<?> ajukanCuti(@RequestBody CutiRequestDTO dto, Authentication authentication) {
+    public ResponseEntity<?> ajukanCuti(@Valid @RequestBody CutiRequestDTO dto, Authentication authentication) {
         try {
             String username = authentication.getName();
             Cuti cuti = cutiService.ajukanCuti(username, dto);
@@ -56,7 +58,7 @@ public class CutiController {
 
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('HRD')")
-    public ResponseEntity<?> updateStatus(@PathVariable int id, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> updateStatus(@PathVariable int id, @Valid @RequestBody Map<String, String> payload) {
         try {
             String status = payload.get("status");
             Cuti cuti = cutiService.updateStatusCuti(id, status);

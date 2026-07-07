@@ -5,6 +5,8 @@ import com.karyawan.karyawan.model.Cuti;
 import com.karyawan.karyawan.repository.CutiRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Service
@@ -16,33 +18,43 @@ public class CutiService {
         this.cutiRepository = cutiRepository;
     }
 
-    // Fungsi Karyawan: Mengajukan cuti baru
     public Cuti ajukanCuti(String username, CutiRequestDTO dto) {
-        if (dto.tanggalMulai().isAfter(dto.tanggalSelesai())) {
-            throw new RuntimeException("Tanggal selesai tidak boleh mendahului tanggal mulai.");
+        
+        LocalDate tglMulai;
+        LocalDate tglSelesai;
+        
+
+        try {
+            tglMulai = LocalDate.parse(dto.getTanggalMulai());
+            tglSelesai = LocalDate.parse(dto.getTanggalSelesai());
+
+            if (tglMulai.isAfter(tglSelesai)) {
+                throw new RuntimeException("Tanggal selesai tidak boleh mendahului tanggal mulai.");
+            }
+        } catch (DateTimeParseException e) {
+            throw new RuntimeException("Format tanggal tidak valid. Sistem menolak permintaan.");
         }
 
-        Cuti cuti = new Cuti(
-            username, 
-            dto.tanggalMulai(), 
-            dto.tanggalSelesai(), 
-            dto.alasan(), 
-            "MENUNGGU" // Status default
-        );
+
+        Cuti cuti = new Cuti();
+        cuti.setUsernameKaryawan(username);
+        cuti.setTanggalMulai(tglMulai);
+        cuti.setTanggalSelesai(tglSelesai);
+        cuti.setAlasan(dto.getAlasan());
+        cuti.setStatus("MENUNGGU");
+        
         return cutiRepository.save(cuti);
     }
 
-    // Fungsi Karyawan: Melihat riwayat cuti sendiri
+
     public List<Cuti> getRiwayatCutiSaya(String username) {
         return cutiRepository.findByUsernameKaryawan(username);
     }
 
-    // Fungsi HRD: Melihat semua pengajuan cuti
     public List<Cuti> getAllCuti() {
         return cutiRepository.findAll();
     }
 
-    // Fungsi HRD: Menerima atau menolak cuti
     public Cuti updateStatusCuti(int id, String statusBaru) {
         Cuti cuti = cutiRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Data cuti tidak ditemukan"));
