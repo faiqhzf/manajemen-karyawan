@@ -8,7 +8,9 @@ public record KaryawanResponseDTO(
     String nama,
     String departemen,
     BigDecimal gaji,
-    String username
+    String username,
+    String noTelepon,
+    String fotoUrl
 ) {
     public static KaryawanResponseDTO fromEntity(Karyawan karyawan) {
         return new KaryawanResponseDTO(
@@ -16,7 +18,9 @@ public record KaryawanResponseDTO(
             karyawan.getNama(),
             karyawan.getDepartemen(),
             karyawan.getGaji(),
-            karyawan.getUsername()
+            karyawan.getUsername(),
+            karyawan.getNoTelepon(),
+            karyawan.getFotoUrl()
         );
     }
 }

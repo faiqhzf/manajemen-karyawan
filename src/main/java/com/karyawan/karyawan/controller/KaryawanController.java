@@ -1,7 +1,9 @@
 package com.karyawan.karyawan.controller;
 
+import com.karyawan.karyawan.dto.ChangePasswordRequestDTO;
 import com.karyawan.karyawan.dto.KaryawanRequestDTO;
 import com.karyawan.karyawan.dto.KaryawanResponseDTO;
+import com.karyawan.karyawan.dto.UpdateProfilRequestDTO;
 import com.karyawan.karyawan.service.KaryawanService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,4 +114,20 @@ public class KaryawanController {
     public List<KaryawanResponseDTO> getTerbaru() {
         return service.getDaftarKaryawanTerbaru();
     }
+
+    @PutMapping("/me")
+public ResponseEntity<KaryawanResponseDTO> updateMyProfile(Authentication authentication, @Valid @RequestBody UpdateProfilRequestDTO dto) {
+    return ResponseEntity.ok(service.updateProfilSendiri(authentication.getName(), dto));
+}
+
+@PutMapping("/me/password")
+public ResponseEntity<?> changeMyPassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequestDTO dto) {
+    service.gantiPasswordSendiri(authentication.getName(), dto);
+    return ResponseEntity.ok(Map.of("message", "Password berhasil diperbarui"));
+}
+
+@PostMapping("/me/foto")
+public ResponseEntity<KaryawanResponseDTO> uploadFotoProfil(Authentication authentication, @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+    return ResponseEntity.ok(service.uploadFotoProfil(authentication.getName(), file));
+}
 }

@@ -1,5 +1,3 @@
-
-
 // --- 1. AUTENTIKASI & UTILITAS ---
 const token = sessionStorage.getItem('hris_token');
 const role = sessionStorage.getItem('hris_role');
@@ -9,7 +7,6 @@ if (!token || role !== 'ROLE_HRD') {
     window.location.href = '/login.html';
 }
 
-// Utilitas Keamanan XSS
 const escapeHTML = (str) => {
     if (str === null || str === undefined) return '';
     return String(str)
@@ -35,6 +32,7 @@ const statusText = document.getElementById('status-text');
 const searchInput = document.getElementById('search-input');
 const filterDepartemen = document.getElementById('filter-departemen');
 const sortData = document.getElementById('sort-data');
+const formJadwal = document.getElementById('form-generate-jadwal');
 
 // --- 2. FUNGSI UI & INTERAKSI ---
 function showStatus(message, isError = false) {
@@ -109,7 +107,10 @@ function toggleRightSidebar() {
 function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
     document.getElementById(tabId).classList.remove('hidden');
-    document.getElementById('header-title').textContent = tabId === 'tab-dashboard' ? 'Dasbor Analitik' : 'Direktori Karyawan';
+    
+    if (tabId === 'tab-dashboard') document.getElementById('header-title').textContent = 'Dasbor Analitik';
+    else if (tabId === 'tab-karyawan') document.getElementById('header-title').textContent = 'Direktori Karyawan';
+    else document.getElementById('header-title').textContent = 'Manajemen Jadwal';
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('text-white', 'bg-white/20', 'shadow-inner', 'border', 'border-white/10');
@@ -120,6 +121,7 @@ function switchTab(tabId) {
     activeBtn.classList.add('text-white', 'bg-white/20', 'shadow-inner', 'border', 'border-white/10');
 }
 
+// FUNGSI MANAJEMEN MODAL (TAMBAH/EDIT & DETAIL)
 function openFormModal() {
     document.getElementById('form-modal').classList.remove('hidden');
     setTimeout(() => {
@@ -138,6 +140,15 @@ function closeFormModal() {
         form.reset();
         document.getElementById('karyawan-id').value = '';
         document.getElementById('form-title').textContent = 'Tambah Pegawai';
+    }, 200);
+}
+
+function closeDetailModal() {
+    const mc = document.getElementById('modal-container-detail');
+    mc.classList.remove('scale-100', 'opacity-100');
+    mc.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        document.getElementById('detail-modal').classList.add('hidden');
     }, 200);
 }
 
@@ -192,43 +203,105 @@ function renderKaryawanTable(data) {
     }
 
     data.forEach(k => {
-        // Menerapkan XSS Escaping pada Data Dinamis
         const amanNama = escapeHTML(k.nama);
         const amanDept = escapeHTML(k.departemen);
+        // Pertahankan format asli (tidak diubah-ubah oleh CSS nantinya)
         const amanUser = escapeHTML(k.username || 'N/A');
         const initial = amanNama.substring(0, 2).toUpperCase();
 
+        const hasPhoto = k.fotoUrl && k.fotoUrl.trim() !== "";
+        const avatarContent = hasPhoto 
+            ? `<img src="${k.fotoUrl}" class="w-full h-full object-cover">` 
+            : initial;
+        const avatarStyle = hasPhoto 
+            ? "border-0" 
+            : "border-2 border-[#dce4f0] text-[#5c43d6] font-black text-xs";
+
         tableBody.innerHTML += `
-            <tr class="hover:bg-white/50 transition-colors border-b border-white/30 last:border-0">
+            <tr class="hover:bg-white/50 transition-colors border-b border-white/30 last:border-0 relative z-10">
                 <td class="px-6 py-5">
                     <div class="flex items-center gap-4">
-                        <div class="neu-icon w-10 h-10 rounded-xl bg-white text-[#5c43d6] font-black text-xs flex items-center justify-center shrink-0 border-2 border-[#dce4f0]">${initial}</div>
+                        <div class="neu-icon w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 overflow-hidden ${avatarStyle}">
+                            ${avatarContent}
+                        </div>
                         <div>
                             <div class="font-black text-slate-800 text-sm">${amanNama}</div>
-                            <div class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">ID: #${k.id} &bull; @${amanUser}</div>
+                            <!-- PERBAIKAN: Memisahkan ID yang uppercase, dengan Username yang dibiarkan natural (normal-case) -->
+                            <div class="text-[10px] text-slate-500 tracking-widest mt-0.5"><span class="uppercase">ID: #${k.id}</span> &bull; <span class="normal-case">@${amanUser}</span></div>
                         </div>
                     </div>
                 </td>
                 <td class="px-6 py-5"><span class="px-3 py-1.5 bg-white border border-white/50 text-slate-600 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-sm">${amanDept}</span></td>
                 <td class="px-6 py-5 text-slate-800 font-black">${formatRupiah(k.gaji)}</td>
-                <td class="px-6 py-5 text-right space-x-2">
-                    <button onclick="editKaryawan(${k.id}, '${amanNama.replace(/'/g, "\\'")}', '${amanDept.replace(/'/g, "\\'")}', ${k.gaji})" class="neu-button bg-white text-indigo-600 px-4 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-wider">Edit</button>
-                    <button onclick="deleteKaryawan(${k.id})" class="neu-button bg-white text-rose-500 px-4 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-wider">Hapus</button>
+                <td class="px-6 py-5 text-right space-x-2 relative z-20">
+                    <button onclick="viewKaryawan(${k.id})" class="neu-button bg-white text-emerald-600 px-4 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-wider cursor-pointer">Detail</button>
+                    <button onclick="editKaryawan(${k.id})" class="neu-button bg-white text-indigo-600 px-4 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-wider cursor-pointer">Edit</button>
+                    <button onclick="deleteKaryawan(${k.id})" class="neu-button bg-white text-rose-500 px-4 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-wider cursor-pointer">Hapus</button>
                 </td>
             </tr>
         `;
     });
 }
 
+function viewKaryawan(id) {
+    const k = globalKaryawanData.find(emp => emp.id === id);
+    if (!k) return;
+
+    document.getElementById('detail-id').textContent = k.id;
+    document.getElementById('detail-nama').textContent = k.nama;
+    document.getElementById('detail-username').textContent = k.username || 'N/A';
+    document.getElementById('detail-dept').textContent = k.departemen;
+    document.getElementById('detail-telepon').textContent = k.noTelepon || 'Belum diatur';
+    document.getElementById('detail-gaji').textContent = formatRupiah(k.gaji);
+
+    const imgEl = document.getElementById('detail-foto');
+    const initialEl = document.getElementById('detail-inisial');
+
+    if (k.fotoUrl) {
+        imgEl.src = k.fotoUrl;
+        imgEl.classList.remove('hidden');
+        initialEl.classList.add('hidden');
+    } else {
+        imgEl.classList.add('hidden');
+        initialEl.classList.remove('hidden');
+        initialEl.textContent = k.nama.substring(0, 2).toUpperCase();
+    }
+
+    document.getElementById('detail-modal').classList.remove('hidden');
+    setTimeout(() => {
+        const mc = document.getElementById('modal-container-detail');
+        mc.classList.remove('scale-95', 'opacity-0');
+        mc.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function editKaryawan(id) {
+    const k = globalKaryawanData.find(emp => emp.id === id);
+    if (!k) return;
+
+    document.getElementById('karyawan-id').value = k.id;
+    document.getElementById('nama').value = k.nama;
+    document.getElementById('departemen').value = k.departemen;
+    document.getElementById('gaji').value = k.gaji;
+    document.getElementById('username').value = k.username || '';
+    document.getElementById('password').value = ''; 
+    
+    document.getElementById('form-title').textContent = `Edit Pegawai #${k.id}`;
+    openFormModal();
+}
+
 if(form) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('karyawan-id').value;
+        const inputUsername = document.getElementById('username');
+        const saranContainer = document.getElementById('saran-username');
+        
         const payload = {
             nama: document.getElementById('nama').value.trim(),
             departemen: document.getElementById('departemen').value,
             gaji: parseFloat(document.getElementById('gaji').value),
-            username: document.getElementById('username').value.trim(),
+            username: inputUsername.value.trim(),
             password: document.getElementById('password').value
         };
         const method = id ? 'PUT' : 'POST';
@@ -238,26 +311,35 @@ if(form) {
             const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
             if (res.ok) {
                 showStatus('Data berhasil disinkronisasi');
+                saranContainer.classList.add('hidden'); // Sembunyikan saran jika berhasil
                 closeFormModal();
                 fetchKaryawan(); 
             } else {
-                showStatus('Gagal. Periksa kemungkinan username ganda.', true);
+                showStatus('Username sudah terpakai.', true);
+                
+                // LOGIKA GENERATOR SARAN USERNAME
+                const baseName = payload.username.toLowerCase().replace(/[^a-z0-9]/g, ''); // Bersihkan karakter aneh
+                const randNum = Math.floor(100 + Math.random() * 900); // 3 digit acak
+                const deptLower = payload.departemen.toLowerCase();
+                
+                // Buat 3 opsi username alternatif
+                const saran1 = `${baseName}${randNum}`;
+                const saran2 = `${baseName}_${deptLower}`;
+                const saran3 = `${baseName}.${new Date().getFullYear()}`;
+
+                saranContainer.innerHTML = `
+                    <span class="w-full text-[9px] font-bold text-rose-500">Coba gunakan rekomendasi ini:</span>
+                    <button type="button" onclick="document.getElementById('username').value='${saran1}'" class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-md hover:bg-indigo-200">${saran1}</button>
+                    <button type="button" onclick="document.getElementById('username').value='${saran2}'" class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-md hover:bg-indigo-200">${saran2}</button>
+                    <button type="button" onclick="document.getElementById('username').value='${saran3}'" class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-md hover:bg-indigo-200">${saran3}</button>
+                `;
+                saranContainer.classList.remove('hidden');
             }
         } catch (error) { showStatus('Gagal memproses permintaan', true); }
     });
 }
-
-function editKaryawan(id, nama, departemen, gaji) {
-    document.getElementById('karyawan-id').value = id;
-    document.getElementById('nama').value = nama;
-    document.getElementById('departemen').value = departemen;
-    document.getElementById('gaji').value = gaji;
-    document.getElementById('form-title').textContent = `Edit Pegawai #${id}`;
-    openFormModal();
-}
-
 async function deleteKaryawan(id) {
-    if (!confirm(`Hapus data #${id}?`)) return;
+    if (!confirm(`Tindakan ini tidak bisa dibatalkan! Hapus data pegawai #${id}?`)) return;
     try {
         const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }});
         if (res.ok) { fetchKaryawan(); showStatus('Data berhasil dihapus'); }
@@ -279,7 +361,6 @@ async function fetchSemuaCuti() {
             }
 
             data.sort((a, b) => a.status === 'MENUNGGU' ? -1 : 1).forEach(c => {
-                // Menerapkan XSS Escaping pada Data Dinamis Cuti
                 const amanUser = escapeHTML(c.usernameKaryawan);
                 const amanAlasan = escapeHTML(c.alasan);
                 const amanTglMulai = escapeHTML(c.tanggalMulai);
@@ -294,14 +375,14 @@ async function fetchSemuaCuti() {
                     : (amanStatus === 'DISETUJUI' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700');
                 
                 const actionHTML = isPending ? `
-                    <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100/50">
-                        <button onclick="prosesCuti(${c.id}, 'DISETUJUI')" class="neu-button flex-1 bg-[#5c43d6] text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Setuju</button>
-                        <button onclick="prosesCuti(${c.id}, 'DITOLAK')" class="neu-button flex-1 bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Tolak</button>
+                    <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100/50 relative z-20">
+                        <button onclick="prosesCuti(${c.id}, 'DISETUJUI')" class="neu-button flex-1 bg-[#5c43d6] text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl cursor-pointer">Setuju</button>
+                        <button onclick="prosesCuti(${c.id}, 'DITOLAK')" class="neu-button flex-1 bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl cursor-pointer">Tolak</button>
                     </div>
                 ` : '';
 
                 cutiContainer.innerHTML += `
-                    <div class="inner-glass-card rounded-3xl p-5 mb-5">
+                    <div class="inner-glass-card rounded-3xl p-5 mb-5 relative z-10">
                         <div class="flex justify-between items-start mb-3">
                             <div class="flex items-center gap-3">
                                 <div class="neu-icon w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-black text-xs shrink-0 border border-[#dce4f0]">@</div>
@@ -345,6 +426,108 @@ async function prosesCuti(id, status) {
     }
 }
 
+// --- 5. LOGIKA GENERATE JADWAL ---
+if(formJadwal) {
+    formJadwal.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-generate-jadwal');
+        btn.innerHTML = 'Memproses...';
+        btn.disabled = true;
 
+        const tanggalMulai = document.getElementById('tgl-mulai-jadwal').value;
+
+        try {
+            const res = await fetch('/api/jadwal/generate', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tanggalMulai: tanggalMulai })
+            });
+
+            if (res.ok) {
+                showStatus('Jadwal mingguan berhasil didistribusikan ke seluruh pegawai.');
+                formJadwal.reset();
+            } else {
+                showStatus('Gagal memproses jadwal.', true);
+            }
+        } catch (error) {
+            showStatus('Terjadi kesalahan jaringan', true);
+        } finally {
+            btn.innerHTML = 'Generate Jadwal Massal';
+            btn.disabled = false;
+        }
+    });
+}
+
+// Eksekusi Panggilan Awal
 fetchKaryawan();
 fetchSemuaCuti();
+
+// --- 6. LOGIKA PEMANTAUAN ABSENSI HARIAN ---
+async function fetchAbsensiHarian() {
+    try {
+        // Mengambil jadwal untuk hari ini (server time)
+        const res = await fetch('/api/jadwal/harian', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            const tbody = document.getElementById('tabel-absensi-harian');
+            tbody.innerHTML = '';
+            
+            // Set Tanggal Header UI
+            const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('label-tanggal-absensi').textContent = `LIVE HARI INI: ${today}`;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400 font-bold">Jadwal belum didistribusikan untuk hari ini.</td></tr>`;
+                return;
+            }
+
+            let countHadir = 0, countTelat = 0, countKosong = 0;
+
+            data.forEach(j => {
+                const safeUser = escapeHTML(j.usernameKaryawan);
+                const shift = `${j.jamMasukShift || '-'} s/d ${j.jamPulangShift || '-'}`;
+                const inTime = j.waktuCheckIn ? j.waktuCheckIn.substring(0, 8) : '<span class="text-slate-300">Belum</span>';
+                const outTime = j.waktuCheckOut ? j.waktuCheckOut.substring(0, 8) : '<span class="text-slate-300">Belum</span>';
+                const status = j.status;
+
+                let statusStyle = '';
+                if (status === 'HADIR') { statusStyle = 'bg-emerald-100 text-emerald-700 border-emerald-200'; countHadir++; }
+                else if (status === 'TERLAMBAT') { statusStyle = 'bg-amber-100 text-amber-700 border-amber-200'; countTelat++; }
+                else { statusStyle = 'bg-slate-100 text-slate-500 border-slate-200'; countKosong++; }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-white/50 transition-colors border-b border-white/30 last:border-0">
+                        <td class="px-6 py-4 font-black text-indigo-700">@${safeUser}</td>
+                        <td class="px-6 py-4 text-xs">${shift}</td>
+                        <td class="px-6 py-4 font-black">${inTime}</td>
+                        <td class="px-6 py-4 font-black">${outTime}</td>
+                        <td class="px-6 py-4 text-right">
+                            <span class="px-3 py-1.5 rounded-lg text-[9px] font-black tracking-widest uppercase border shadow-sm ${statusStyle}">
+                                ${status.replace('_', ' ')}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // Update Statistik Dashboard
+            document.getElementById('stat-hadir').textContent = countHadir;
+            document.getElementById('stat-telat').textContent = countTelat;
+            document.getElementById('stat-kosong').textContent = countKosong;
+        }
+    } catch (error) {
+        console.error("Gagal memuat data absensi harian", error);
+    }
+}
+
+// Tambahkan pemanggilan fetchAbsensiHarian() di fungsi switchTab agar data diperbarui (refresh) setiap kali HRD membuka tab Jadwal
+const originalSwitchTabAdmin = switchTab;
+switchTab = function(tabId) {
+    originalSwitchTabAdmin(tabId);
+    if (tabId === 'tab-jadwal') {
+        fetchAbsensiHarian();
+    }
+};

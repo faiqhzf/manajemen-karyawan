@@ -14,7 +14,9 @@ public class Karyawan {
     private String nama;
     private String departemen;
     private BigDecimal gaji;
-    
+    private String noTelepon;
+    private String fotoUrl;
+
     // Properti baru
     private String username;
 
@@ -34,13 +36,17 @@ public class Karyawan {
     public String getDepartemen() { return departemen; }
     public BigDecimal getGaji() { return gaji; }
     public String getUsername() { return username; }
+    public String getNoTelepon() { return noTelepon; }
+    public String getFotoUrl() { return fotoUrl; }
 
     // Setters
     public void setId(int id) { this.id = id; }
     public void setNama(String nama) { this.nama = nama; }
     public void setDepartemen(String departemen) { this.departemen = departemen; }
     public void setGaji(BigDecimal gaji) { this.gaji = gaji; }
+    public void setNoTelepon(String noTelepon) { this.noTelepon = noTelepon; }
+    public void setFotoUrl(String fotoUrl) { this.fotoUrl = fotoUrl; }
     
-    // WAJIB DITAMBAHKAN AGAR ERROR 67108964 HILANG:
+    
     public void setUsername(String username) { this.username = username; }
 }

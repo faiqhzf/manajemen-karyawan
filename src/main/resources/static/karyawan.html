@@ -4,90 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Pegawai - Manajemen Karyawan</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
-        
-        :root {
-            --neu-bg: #dce4f0;
-            --neu-shadow-dark: #b8c6d9; 
-            --neu-shadow-light: #ffffff; 
-        }
-
-        body {
-            font-family: 'Nunito', sans-serif;
-            background-color: var(--neu-bg);
-            overflow: hidden;
-        }
-
-        .glass-wrapper {
-            background: rgba(236, 240, 243, 0.3);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 24px 24px 48px var(--neu-shadow-dark), 
-                       -24px -24px 48px var(--neu-shadow-light);
-        }
-
-        .inner-glass-card {
-            background: rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 10px 10px 20px var(--neu-shadow-dark), 
-                       -10px -10px 20px var(--neu-shadow-light);
-            transition: transform 0.2s ease;
-        }
-
-        .neu-pressed {
-            background: rgba(220, 228, 240, 0.4);
-            box-shadow: inset 6px 6px 12px var(--neu-shadow-dark), 
-                        inset -6px -6px 12px var(--neu-shadow-light);
-            border: 1px solid transparent;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-        .neu-pressed:focus {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: inset 8px 8px 16px var(--neu-shadow-dark), 
-                        inset -8px -8px 16px var(--neu-shadow-light);
-        }
-
-        .neu-button {
-            box-shadow: 6px 6px 12px var(--neu-shadow-dark), 
-                       -6px -6px 12px var(--neu-shadow-light);
-            transition: all 0.2s ease;
-        }
-        .neu-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 8px 8px 16px var(--neu-shadow-dark), 
-                       -8px -8px 16px var(--neu-shadow-light);
-        }
-        .neu-button:active {
-            transform: translateY(0);
-            box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), 
-                        inset -4px -4px 8px rgba(255,255,255,0.4);
-        }
-
-        .neu-icon {
-            box-shadow: 8px 8px 16px var(--neu-shadow-dark), 
-                       -8px -8px 16px var(--neu-shadow-light);
-        }
-
-        .sidebar-blue { background: linear-gradient(180deg, #3b82f6 0%, #1e3a8a 100%); box-shadow: 10px 0 30px rgba(59, 130, 246, 0.2); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
-    </style>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <link rel="stylesheet" href="/css/karyawan.css">
 </head>
 <body class="h-screen w-full flex items-center justify-center p-4 lg:p-6 text-slate-700">
-
-    <script>
-        const token = sessionStorage.getItem('hris_token');
-        const role = sessionStorage.getItem('hris_role');
-        if (!token || role !== 'ROLE_KARYAWAN') {
-            sessionStorage.clear();
-            window.location.href = '/login.html';
-        }
-    </script>
 
     <div id="status-badge" class="neu-icon fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 border border-emerald-200 hidden z-[9999] transform transition-all flex items-center gap-3">
         <span id="status-icon"></span>
@@ -109,9 +31,15 @@
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
                     <span class="sidebar-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Profil Pribadi</span>
                 </button>
+                
                 <button onclick="switchTab('tab-cuti')" id="btn-tab-cuti" class="sidebar-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-blue-200 hover:text-white hover:bg-white/10 transition-all">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     <span class="sidebar-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Riwayat Kehadiran</span>
+                </button>
+                
+                <button onclick="switchTab('tab-absensi')" id="btn-tab-absensi" class="sidebar-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-blue-200 hover:text-white hover:bg-white/10 transition-all">
+                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="sidebar-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Absensi Harian</span>
                 </button>
             </nav>
 
@@ -160,9 +88,24 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
                         
                         <div class="inner-glass-card rounded-[2.5rem] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
-                            <div class="neu-icon w-32 h-32 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white text-5xl font-black border-[6px] border-[#dce4f0] mb-6 relative z-10" id="profil-inisial"></div>
+                            <div class="relative group cursor-pointer mb-6 z-10" onclick="openModalUploadFoto()" title="Ubah Foto Profil">
+                                <div class="neu-icon w-32 h-32 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white text-5xl font-black border-[6px] border-[#dce4f0] overflow-hidden relative">
+                                    <span id="profil-inisial"></span>
+                                    <img id="profil-foto" src="" alt="Foto Profil" class="hidden absolute inset-0 w-full h-full object-cover">
+                                </div>
+                                <div class="absolute inset-0 bg-slate-900/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                </div>
+                            </div>
+                            
                             <h2 class="text-3xl font-black text-slate-800 tracking-tight z-10" id="profil-nama">Nama Pegawai</h2>
                             <p class="text-sm font-bold text-blue-600 uppercase tracking-widest mt-2 z-10">Pegawai ID: #<span id="profil-id">000</span></p>
+                            
+                            <div class="mt-6 flex gap-3 z-10">
+                                <button onclick="openModalEditProfil()" class="neu-button bg-white text-blue-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest">Edit Profil</button>
+                                <button onclick="openModalPassword()" class="neu-button bg-white text-slate-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest">Sandi</button>
+                            </div>
+
                             <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-blue-100 rounded-full blur-3xl opacity-50 z-0"></div>
                         </div>
 
@@ -186,13 +129,22 @@
                                     <h3 class="text-2xl font-black text-slate-800" id="profil-gaji">Rp 0</h3>
                                 </div>
                             </div>
+
+                            <div class="inner-glass-card rounded-3xl p-6 flex items-center gap-5 transition-transform hover:-translate-y-1">
+                                <div class="neu-pressed w-14 h-14 bg-transparent text-slate-500 rounded-2xl flex items-center justify-center">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Nomor Telepon</span>
+                                    <h3 class="text-xl font-black text-slate-800" id="profil-telepon">-</h3>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div id="tab-cuti" class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out]">
                     <div class="inner-glass-card rounded-[2.5rem] overflow-hidden flex flex-col min-h-[60vh] max-w-5xl">
-                        
                         <div class="p-6 border-b border-white/50 bg-white/40 flex justify-between items-center">
                             <h2 class="font-black text-slate-800 text-xl">Dokumen Ketidakhadiran</h2>
                             <button onclick="openModalCuti()" class="neu-button bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2">
@@ -200,7 +152,6 @@
                                 Ajukan Formulir Baru
                             </button>
                         </div>
-
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm whitespace-nowrap">
                                 <thead class="bg-white/30 text-slate-500 font-black uppercase tracking-widest text-[10px] border-b border-white/50">
@@ -211,9 +162,43 @@
                                         <th class="px-6 py-5 text-right">Status Keputusan</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tabel-cuti" class="divide-y divide-white/40 font-bold text-slate-700">
-                                    </tbody>
+                                <tbody id="tabel-cuti" class="divide-y divide-white/40 font-bold text-slate-700"></tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-absensi" class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out]">
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-6xl">
+                        
+                        <div class="xl:col-span-1 space-y-6">
+                            <div class="inner-glass-card rounded-[2.5rem] p-6 text-center">
+                                <h3 class="text-slate-500 font-black tracking-widest uppercase text-[10px] mb-2">Waktu Sistem</h3>
+                                <div id="realtime-clock" class="text-4xl font-black text-slate-800 tracking-tighter mb-6">00:00:00</div>
+                                
+                                <button onclick="lakukanClockIn()" id="btn-clockin" class="neu-button w-full bg-blue-600 text-white font-black py-4 rounded-2xl text-sm mb-3 flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    Rekam Kehadiran (Clock-In)
+                                </button>
+                                
+                                <button onclick="lakukanClockOut()" id="btn-clockout" disabled class="neu-button w-full bg-slate-200 text-slate-400 font-black py-4 rounded-2xl text-sm cursor-not-allowed">
+                                    Akhiri Sesi (Clock-Out)
+                                </button>
+                                
+                                <p class="text-[9px] text-slate-400 font-bold mt-4 uppercase tracking-widest"><span class="text-rose-500">*</span> Membutuhkan akses GPS (Location)</p>
+                            </div>
+
+                            <div class="inner-glass-card rounded-3xl p-5 border-l-4 border-l-amber-500">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></div>
+                                    <h3 class="text-amber-700 font-black text-xs uppercase tracking-widest">Peringatan Jadwal</h3>
+                                </div>
+                                <p class="text-xs font-bold text-slate-600" id="notif-jadwal">Tidak ada perubahan jadwal mendadak hari ini.</p>
+                            </div>
+                        </div>
+
+                        <div class="xl:col-span-2 inner-glass-card rounded-[2.5rem] p-6 bg-white/40">
+                            <div id="calendar" class="w-full min-h-[500px] font-bold text-sm text-slate-700"></div>
                         </div>
                     </div>
                 </div>
@@ -223,26 +208,25 @@
     </div>
 
     <div id="modal-cuti" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-md flex items-center justify-center p-4 z-[60] transition-all">
-        <div class="inner-glass-card rounded-[2.5rem] max-w-md w-full border border-white/60 overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0 duration-200" id="modal-container">
+        <div class="inner-glass-card rounded-[2.5rem] max-w-md w-full border border-white/60 overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0 duration-200" id="modal-container-cuti">
             <div class="p-6 border-b border-white/50 bg-white/40 flex justify-between items-center">
                 <h2 class="text-lg font-black text-slate-800">Form Pengajuan Izin</h2>
                 <button onclick="closeModalCuti()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
             </div>
-            
             <form id="form-pengajuan-cuti" class="p-8 space-y-5 bg-white/20">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Mulai Tanggal</label>
+                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Mulai</label>
                         <input type="date" id="tgl-mulai" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Sampai Tanggal</label>
+                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Sampai</label>
                         <input type="date" id="tgl-selesai" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
                     </div>
                 </div>
                 <div>
                     <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Keterangan / Alasan</label>
-                    <textarea id="alasan-cuti" required rows="3" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-sm resize-none" placeholder="Deskripsikan alasan..."></textarea>
+                    <textarea id="alasan-cuti" required rows="3" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-sm resize-none"></textarea>
                 </div>
                 <div class="pt-4 flex gap-3">
                     <button type="submit" id="btn-submit-cuti" class="neu-button w-full bg-blue-600 text-white font-black py-4 rounded-2xl text-sm">Kirim Dokumen</button>
@@ -251,6 +235,103 @@
         </div>
     </div>
 
-<script src="/js/karyawan.js"></script>
+    <div id="modal-edit-profil" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-md flex items-center justify-center p-4 z-[60] transition-all">
+        <div class="inner-glass-card rounded-[2.5rem] max-w-sm w-full border border-white/60 overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0 duration-200" id="modal-container-profil">
+            <div class="p-5 border-b border-white/50 bg-white/40 flex justify-between items-center">
+                <h2 class="text-base font-black text-slate-800">Edit Profil Anda</h2>
+                <button onclick="closeModalEditProfil()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
+            </div>
+            <form id="form-edit-profil" class="p-6 space-y-4 bg-white/20">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Nama Lengkap</label>
+                    <input type="text" id="edit-nama" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Nomor Telepon</label>
+                    <input type="text" id="edit-telepon" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs" placeholder="08xx...">
+                </div>
+                <div class="pt-2">
+                    <button type="submit" id="btn-submit-profil" class="neu-button w-full bg-blue-600 text-white font-black py-3 rounded-xl text-xs">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-password" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-md flex items-center justify-center p-4 z-[60] transition-all">
+        <div class="inner-glass-card rounded-[2.5rem] max-w-sm w-full border border-white/60 overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0 duration-200" id="modal-container-password">
+            <div class="p-5 border-b border-white/50 bg-white/40 flex justify-between items-center">
+                <h2 class="text-base font-black text-slate-800">Ganti Kata Sandi</h2>
+                <button onclick="closeModalPassword()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
+            </div>
+            <form id="form-ganti-password" class="p-6 space-y-4 bg-white/20">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Kata Sandi Lama</label>
+                    <input type="password" id="pass-lama" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Kata Sandi Baru</label>
+                    <input type="password" id="pass-baru" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
+                </div>
+                <div class="pt-2">
+                    <button type="submit" id="btn-submit-password" class="neu-button w-full bg-rose-500 text-white font-black py-3 rounded-xl text-xs">Perbarui Sandi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-foto" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-md flex items-center justify-center p-4 z-[60] transition-all">
+        <div class="inner-glass-card rounded-[2.5rem] max-w-sm w-full border border-white/60 overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0 duration-200" id="modal-container-foto">
+            <div class="p-5 border-b border-white/50 bg-white/40 flex justify-between items-center">
+                <h2 class="text-base font-black text-slate-800">Upload Foto Profil</h2>
+                <button onclick="closeModalUploadFoto()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
+            </div>
+            <form id="form-upload-foto" class="p-6 space-y-4 bg-white/20">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Pilih File Gambar (JPG/PNG)</label>
+                    <input type="file" id="file-foto" accept="image/*" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-600 text-xs cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
+                <div class="pt-2">
+                    <button type="submit" id="btn-submit-foto" class="neu-button w-full bg-blue-600 text-white font-black py-3 rounded-xl text-xs">Upload & Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/karyawan.js"></script>
+
+    <!-- MODAL PERINGATAN KETERLAMBATAN (KERJA KERJA KERJA) -->
+    <div id="modal-kerja" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-md flex items-center justify-center p-4 z-[9999] transition-all">
+        <div class="inner-glass-card rounded-[2.5rem] max-w-lg w-full overflow-hidden shadow-2xl transform transition-all scale-100 opacity-100 duration-200 border border-white/60 bg-white/40">
+            
+            <div class="p-8 flex flex-col items-center text-center relative z-20">
+                <h2 class="text-3xl font-black text-rose-600 mb-4 animate-pulse uppercase tracking-tight" id="kerja-judul">Waktu Shift Dimulai!</h2>
+                
+                <!-- Kontainer Gambar Neumorphism -->
+                <div class="neu-icon w-full h-64 rounded-2xl bg-white flex items-center justify-center overflow-hidden border-[6px] border-[#dce4f0] mb-6 p-2">
+                    <img id="gif-kerja" src="images/kerja.gif" alt="Kerja" class="w-full h-full object-contain rounded-xl">
+                </div>
+                
+                <!-- Audio Resources dengan URL Langsung yang Valid -->
+                <audio id="audio-kerja" loop>
+                    <source src="audio/kerja.mp3" type="audio/mpeg">
+                </audio>
+                <audio id="audio-ketawa" loop>
+                    <source src="audio/cat-laugh.mp3" type="audio/mpeg">
+                </audio>
+
+                <p class="text-slate-800 font-bold mb-6 text-sm bg-white/60 p-4 rounded-xl border border-white/50" id="kerja-teks">Anda belum melakukan Clock-In dan waktu sudah melewati jadwal shift. Suara ini tidak akan berhenti sampai Anda mengambil tindakan!</p>
+
+                <div class="grid grid-cols-3 gap-3 w-full">
+                    <button onclick="verifikasiHadirKerja()" class="neu-button bg-blue-600 text-white font-black py-4 rounded-xl text-xs uppercase cursor-pointer">Hadir (WFO)</button>
+                    <button onclick="ajukanIzinMendadak('Izin')" class="neu-button bg-amber-500 text-white font-black py-4 rounded-xl text-xs uppercase cursor-pointer">Izin</button>
+                    <button onclick="ajukanIzinMendadak('Sakit')" class="neu-button bg-rose-500 text-white font-black py-4 rounded-xl text-xs uppercase cursor-pointer">Sakit</button>
+                </div>
+                <p class="text-[10px] font-black text-slate-500 mt-4 uppercase tracking-widest">* Validasi WFO Membutuhkan Akses GPS.</p>
+            </div>
+            
+            <!-- Efek Latar Glow -->
+            <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-rose-100 rounded-full blur-3xl opacity-60 z-0 pointer-events-none"></div>
+        </div>
+    </div>
 </body>
 </html>

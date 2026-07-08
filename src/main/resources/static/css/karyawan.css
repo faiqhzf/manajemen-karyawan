@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+    --neu-bg: #dce4f0;
+    --neu-shadow-dark: #b8c6d9; 
+    --neu-shadow-light: #ffffff; 
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--neu-bg);
+    overflow: hidden;
+}
+
+.glass-wrapper {
+    background: rgba(236, 240, 243, 0.3);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 24px 24px 48px var(--neu-shadow-dark), 
+               -24px -24px 48px var(--neu-shadow-light);
+}
+
+.inner-glass-card {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 10px 10px 20px var(--neu-shadow-dark), 
+               -10px -10px 20px var(--neu-shadow-light);
+    transition: transform 0.2s ease;
+}
+
+.neu-pressed {
+    background: rgba(220, 228, 240, 0.4);
+    box-shadow: inset 6px 6px 12px var(--neu-shadow-dark), 
+                inset -6px -6px 12px var(--neu-shadow-light);
+    border: 1px solid transparent;
+    outline: none;
+    transition: all 0.2s ease;
+}
+.neu-pressed:focus {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: inset 8px 8px 16px var(--neu-shadow-dark), 
+                inset -8px -8px 16px var(--neu-shadow-light);
+}
+
+.neu-button {
+    box-shadow: 6px 6px 12px var(--neu-shadow-dark), 
+               -6px -6px 12px var(--neu-shadow-light);
+    transition: all 0.2s ease;
+}
+.neu-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 8px 8px 16px var(--neu-shadow-dark), 
+               -8px -8px 16px var(--neu-shadow-light);
+}
+.neu-button:active {
+    transform: translateY(0);
+    box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), 
+                inset -4px -4px 8px rgba(255,255,255,0.4);
+}
+
+.neu-icon {
+    box-shadow: 8px 8px 16px var(--neu-shadow-dark), 
+               -8px -8px 16px var(--neu-shadow-light);
+}
+
+.sidebar-blue { 
+    background: linear-gradient(180deg, #3b82f6 0%, #1e3a8a 100%); 
+    box-shadow: 10px 0 30px rgba(59, 130, 246, 0.2); 
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }

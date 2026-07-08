@@ -46,13 +46,16 @@ class KaryawanControllerSecurityTest {
     @Test
     @WithMockUser(username = "faiq_hudzaifah", roles = "KARYAWAN")
     void whenKaryawanAccessMyProfile_thenStatusIsOk() throws Exception {
-        // Insight Terbaru: Konstruksi data palsu langsung menggunakan struktur Java Record DTO
+        
+
         KaryawanResponseDTO mockResponse = new KaryawanResponseDTO(
                 1L, 
                 "Faiq Hudzaifah", 
                 "IT", 
                 BigDecimal.valueOf(10000000), 
-                "faiq_hudzaifah"
+                "faiq_hudzaifah",
+                "081234567890",
+                "/uploads/profil-photos/faiq_hudzaifah.jpg" 
         );
         when(karyawanService.getKaryawanByUsername("faiq_hudzaifah")).thenReturn(mockResponse);
 

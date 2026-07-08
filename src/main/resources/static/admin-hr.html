@@ -5,101 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dasbor Eksekutif - Manajemen Karyawan</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
-        
-        :root {
-            /* Warna Dasar Latar & Bayangan Neumorphism */
-            --neu-bg: #dce4f0;
-            --neu-shadow-dark: #b8c6d9; 
-            --neu-shadow-light: #ffffff; 
-        }
-
-        body {
-            font-family: 'Nunito', sans-serif;
-            background-color: var(--neu-bg);
-            overflow: hidden;
-        }
-
-        /* 1. Hibrida: Kaca + Neumorphism Dasar */
-        .glass-wrapper {
-            background: rgba(236, 240, 243, 0.3); /* Transparansi ringan */
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            /* Bayangan Ekstrusi Neumorphism */
-            box-shadow: 24px 24px 48px var(--neu-shadow-dark), 
-                       -24px -24px 48px var(--neu-shadow-light);
-        }
-
-        /* 2. Kartu Internal Timbul (Soft Pop) */
-        .inner-glass-card {
-            background: rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 10px 10px 20px var(--neu-shadow-dark), 
-                       -10px -10px 20px var(--neu-shadow-light);
-            transition: transform 0.2s ease;
-        }
-
-        /* 3. Input & Kolom Pencarian Tenggelam (Inset Shadow) */
-        .neu-pressed {
-            background: rgba(220, 228, 240, 0.4);
-            box-shadow: inset 6px 6px 12px var(--neu-shadow-dark), 
-                        inset -6px -6px 12px var(--neu-shadow-light);
-            border: 1px solid transparent;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-        .neu-pressed:focus {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: inset 8px 8px 16px var(--neu-shadow-dark), 
-                        inset -8px -8px 16px var(--neu-shadow-light);
-        }
-
-        /* 4. Tombol 3D Interaktif */
-        .neu-button {
-            box-shadow: 6px 6px 12px var(--neu-shadow-dark), 
-                       -6px -6px 12px var(--neu-shadow-light);
-            transition: all 0.2s ease;
-        }
-        .neu-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 8px 8px 16px var(--neu-shadow-dark), 
-                       -8px -8px 16px var(--neu-shadow-light);
-        }
-        .neu-button:active {
-            transform: translateY(0);
-            box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), 
-                        inset -4px -4px 8px rgba(255,255,255,0.4);
-        }
-
-        /* 5. Ikon / Avatar Timbul */
-        .neu-icon {
-            box-shadow: 8px 8px 16px var(--neu-shadow-dark), 
-                       -8px -8px 16px var(--neu-shadow-light);
-        }
-
-        /* Gaya yang dipertahankan */
-        .sidebar-purple { background: linear-gradient(180deg, #5c43d6 0%, #3a268a 100%); box-shadow: 10px 0 30px rgba(92, 67, 214, 0.2); }
-        .card-purple-gradient { background: linear-gradient(135deg, #664bd9 0%, #4a34b2 100%); box-shadow: 0 15px 30px rgba(102, 75, 217, 0.3); }
-        .card-pink-gradient { background: linear-gradient(135deg, #ff7597 0%, #ff527a 100%); box-shadow: 0 15px 30px rgba(255, 117, 151, 0.3); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
-    </style>
+    <link rel="stylesheet" href="/css/admin-hr.css">
 </head>
 <body class="h-screen w-full flex items-center justify-center p-4 lg:p-6 text-slate-700">
 
-    <script>
-        const token = sessionStorage.getItem('hris_token');
-        const role = sessionStorage.getItem('hris_role');
-        if (!token || role !== 'ROLE_HRD') {
-            sessionStorage.clear();
-            window.location.href = '/login.html';
-        }
-    </script>
-
-    <div id="status-badge" class="neu-icon fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 border border-emerald-200 hidden z-[9999] transform transition-all flex items-center gap-3">
+    <div id="status-badge" class="neu-icon fixed top-8 right-8 px-6 py-4 rounded-2xl text-sm font-black bg-emerald-100 text-emerald-800 border border-emerald-200 hidden z-[99999] transform transition-all flex items-center gap-3">
         <span id="status-icon"></span>
         <span id="status-text">Notifikasi Sistem</span>
     </div>
@@ -123,6 +33,11 @@
                 <button onclick="switchTab('tab-karyawan')" id="btn-tab-karyawan" class="sidebar-left-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-indigo-300 hover:text-white hover:bg-white/10 transition-all">
                     <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     <span class="sidebar-left-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Direktori Pegawai</span>
+                </button>
+
+                <button onclick="switchTab('tab-jadwal')" id="btn-tab-jadwal" class="sidebar-left-toggle-btn nav-btn w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-indigo-300 hover:text-white hover:bg-white/10 transition-all">
+                    <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span class="sidebar-left-text text-sm font-bold ml-3 whitespace-nowrap hidden opacity-0 transition-opacity duration-300">Manajemen Jadwal</span>
                 </button>
             </nav>
 
@@ -164,7 +79,7 @@
                                 </div>
                                 <div class="px-4 py-2 bg-white/20 rounded-full text-xs font-bold backdrop-blur-md">Bulanan</div>
                             </div>
-                            <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 px-8 flex items-center justify-between opacity-50 z-0">
+                            <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 px-8 flex items-center justify-between opacity-50 z-0 pointer-events-none">
                                 <svg class="w-full h-16" preserveAspectRatio="none" viewBox="0 0 100 100"><path d="M0,50 Q25,20 50,50 T100,50" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="3"/></svg>
                             </div>
                             <div class="relative z-10 flex items-end gap-12 mt-12">
@@ -201,7 +116,7 @@
                 <div id="tab-karyawan" class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out]">
                     <div class="inner-glass-card rounded-[2.5rem] overflow-hidden flex flex-col h-[75vh]">
                         
-                        <div class="p-6 border-b border-white/50 bg-white/30 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="p-6 border-b border-white/50 bg-white/30 flex flex-col sm:flex-row justify-between items-center gap-4 relative z-20">
                             <h2 class="font-black text-slate-800 text-xl">Daftar Karyawan</h2>
                             
                             <div class="flex flex-wrap gap-3">
@@ -228,8 +143,8 @@
                             </div>
                         </div>
 
-                        <div class="overflow-y-auto flex-grow p-2">
-                            <table class="w-full text-left text-sm whitespace-nowrap">
+                        <div class="overflow-y-auto flex-grow p-2 relative z-10">
+                            <table class="w-full text-left text-sm whitespace-nowrap relative z-10">
                                 <thead class="text-slate-500 font-black uppercase tracking-widest text-[10px]">
                                     <tr>
                                         <th class="px-6 py-4">Informasi Pegawai</th>
@@ -239,9 +154,71 @@
                                     </tr>
                                 </thead>
                                 <tbody id="table-body" class="font-bold text-slate-700">
-                                    </tbody>
+                                </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+
+                <div id="tab-jadwal" class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out]">
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-[1400px]">
+                        
+                        <div class="xl:col-span-1 inner-glass-card rounded-[2.5rem] p-8 flex flex-col relative overflow-hidden h-fit">
+                            <h2 class="text-xl font-black text-slate-800 tracking-tight z-10 mb-2">Generator Jadwal</h2>
+                            <p class="text-xs font-bold text-slate-500 mb-6 z-10">Otomatisasi pembuatan jadwal shift mingguan (Senin-Jumat) untuk seluruh karyawan aktif.</p>
+                            
+                            <form id="form-generate-jadwal" class="relative z-10 space-y-4">
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Mulai Tanggal (Pilih Senin)</label>
+                                    <input type="date" id="tgl-mulai-jadwal" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs cursor-pointer">
+                                </div>
+                                <button type="submit" id="btn-generate-jadwal" class="neu-button w-full bg-[#5c43d6] text-white font-black py-3 rounded-xl text-xs uppercase tracking-widest">
+                                    Distribusi Massal
+                                </button>
+                            </form>
+                            <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-indigo-100 rounded-full blur-3xl opacity-50 z-0"></div>
+                        </div>
+
+                        <div class="xl:col-span-2 inner-glass-card rounded-[2.5rem] flex flex-col h-[75vh] overflow-hidden">
+                            <div class="p-6 border-b border-white/50 bg-white/30 flex justify-between items-center relative z-20">
+                                <div>
+                                    <h2 class="font-black text-slate-800 text-xl">Pemantauan Absensi Harian</h2>
+                                    <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mt-1" id="label-tanggal-absensi">Memuat data...</p>
+                                </div>
+                                
+                                <div class="flex gap-4">
+                                    <div class="text-center px-4 border-r border-white/50">
+                                        <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Hadir</span>
+                                        <span class="text-lg font-black text-emerald-600" id="stat-hadir">0</span>
+                                    </div>
+                                    <div class="text-center px-4 border-r border-white/50">
+                                        <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Telat</span>
+                                        <span class="text-lg font-black text-amber-500" id="stat-telat">0</span>
+                                    </div>
+                                    <div class="text-center px-4">
+                                        <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Kosong</span>
+                                        <span class="text-lg font-black text-slate-500" id="stat-kosong">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="overflow-y-auto flex-grow p-2 relative z-10">
+                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead class="text-slate-500 font-black uppercase tracking-widest text-[10px] sticky top-0 bg-white/60 backdrop-blur-md">
+                                        <tr>
+                                            <th class="px-6 py-4">Username</th>
+                                            <th class="px-6 py-4">Sesi Shift</th>
+                                            <th class="px-6 py-4">Clock-In</th>
+                                            <th class="px-6 py-4">Clock-Out</th>
+                                            <th class="px-6 py-4 text-right">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabel-absensi-harian" class="font-bold text-slate-700">
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -265,7 +242,7 @@
             </div>
 
             <div class="flex-grow overflow-y-auto p-6 space-y-4 transition-all duration-300" id="cuti-feed-container">
-                </div>
+            </div>
 
             <div id="sidebar-right-collapsed" class="hidden flex-col items-center flex-grow pt-8 gap-6 transition-all duration-300">
                 <div class="neu-pressed bg-transparent text-rose-600 w-10 h-10 flex items-center justify-center rounded-xl text-xs font-black" id="badge-cuti-pending-mini">0</div>
@@ -277,25 +254,25 @@
 
     </div>
 
-    <div id="form-modal" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center p-4 z-[100] transition-all">
+    <div id="form-modal" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center p-4 z-[9999] transition-all">
         <div class="inner-glass-card rounded-[2.5rem] max-w-sm w-full overflow-hidden transform transition-all scale-95 opacity-0 duration-200" id="modal-container">
             
             <div class="p-5 border-b border-white/50 bg-white/40 flex justify-between items-center">
                 <h2 class="text-base font-black text-slate-800" id="form-title">Tambah Pegawai</h2>
-                <button onclick="closeFormModal()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
+                <button type="button" onclick="closeFormModal()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
             </div>
             
-            <form id="karyawan-form" class="p-6 space-y-5 bg-white/20">
+            <form id="karyawan-form" class="p-6 space-y-5 bg-white/20 relative z-20">
                 <input type="hidden" id="karyawan-id">
                 
                 <div class="space-y-4">
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Nama Lengkap</label>
-                        <input type="text" id="nama" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
+                        <input type="text" id="nama" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs relative z-30">
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Divisi</label>
-                        <select id="departemen" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs cursor-pointer">
+                        <select id="departemen" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs cursor-pointer relative z-30">
                             <option value="">Pilih Divisi...</option>
                             <option value="IT">IT</option>
                             <option value="Finance">Finance</option>
@@ -306,27 +283,63 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Gaji Pokok (Rp)</label>
-                        <input type="number" id="gaji" required min="0" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
+                        <input type="number" id="gaji" required min="0" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs relative z-30">
                     </div>
                 </div>
 
-                <div class="p-4 bg-indigo-50/50 rounded-2xl border border-white/50 space-y-3">
+                <div class="p-4 bg-indigo-50/50 rounded-2xl border border-white/50 space-y-3 relative z-30">
                     <h3 class="text-[9px] font-black text-indigo-700 uppercase tracking-widest">Kredensial Login</h3>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-600 mb-1">Username</label>
                         <input type="text" id="username" class="neu-pressed w-full px-3 py-2 font-bold text-xs bg-white/40">
+                        <div id="saran-username" class="hidden mt-2 flex flex-wrap gap-2"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-600 mb-1">Kata Sandi</label>
-                        <input type="password" id="password" class="neu-pressed w-full px-3 py-2 font-bold text-xs bg-white/40">
+                        <input type="password" id="password" class="neu-pressed w-full px-3 py-2 font-bold text-xs bg-white/40" placeholder="Kosongkan jika tidak diubah">
                     </div>
                 </div>
 
-                <div class="pt-2 flex gap-3">
-                    <button type="button" onclick="closeFormModal()" class="neu-button w-1/3 bg-white/60 text-slate-600 font-bold py-3 rounded-xl text-xs">Batal</button>
-                    <button type="submit" class="neu-button w-2/3 bg-[#5c43d6] text-white font-black py-3 rounded-xl text-xs">Simpan Data</button>
+                <div class="pt-2 flex gap-3 relative z-30">
+                    <button type="button" onclick="closeFormModal()" class="neu-button w-1/3 bg-white/60 text-slate-600 font-bold py-3 rounded-xl text-xs cursor-pointer">Batal</button>
+                    <button type="submit" class="neu-button w-2/3 bg-[#5c43d6] text-white font-black py-3 rounded-xl text-xs cursor-pointer">Simpan Data</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center p-4 z-[9999] transition-all">
+        <div class="inner-glass-card rounded-[2.5rem] max-w-md w-full overflow-hidden transform transition-all scale-95 opacity-0 duration-200" id="modal-container-detail">
+            
+            <div class="p-5 border-b border-white/50 bg-white/40 flex justify-between items-center">
+                <h2 class="text-base font-black text-slate-800">Detail Pegawai</h2>
+                <button type="button" onclick="closeDetailModal()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
+            </div>
+            
+            <div class="p-8 flex flex-col items-center text-center bg-white/20">
+                <div class="neu-icon w-32 h-32 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-4xl font-black border-[6px] border-[#dce4f0] overflow-hidden mb-6">
+                    <span id="detail-inisial"></span>
+                    <img id="detail-foto" src="" alt="Foto Profil" class="hidden w-full h-full object-cover">
+                </div>
+                
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight" id="detail-nama">-</h2>
+                <p class="text-xs font-bold text-indigo-600 uppercase tracking-widest mt-1 mb-6">ID: #<span id="detail-id">-</span> &bull; @<span id="detail-username">-</span></p>
+
+                <div class="w-full bg-white/40 rounded-2xl p-4 text-left space-y-3 border border-white/50">
+                    <div class="flex justify-between border-b border-white/50 pb-2">
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Divisi</span>
+                        <span class="text-xs font-bold text-slate-800" id="detail-dept">-</span>
+                    </div>
+                    <div class="flex justify-between border-b border-white/50 pb-2">
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">No. Telepon</span>
+                        <span class="text-xs font-bold text-slate-800" id="detail-telepon">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Gaji Pokok</span>
+                        <span class="text-xs font-bold text-slate-800" id="detail-gaji">-</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
