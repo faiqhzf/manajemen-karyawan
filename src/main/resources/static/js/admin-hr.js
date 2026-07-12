@@ -226,7 +226,6 @@ function renderKaryawanTable(data) {
                         </div>
                         <div>
                             <div class="font-black text-slate-800 text-sm">${amanNama}</div>
-                            <!-- PERBAIKAN: Memisahkan ID yang uppercase, dengan Username yang dibiarkan natural (normal-case) -->
                             <div class="text-[10px] text-slate-500 tracking-widest mt-0.5"><span class="uppercase">ID: #${k.id}</span> &bull; <span class="normal-case">@${amanUser}</span></div>
                         </div>
                     </div>
@@ -313,29 +312,31 @@ if(form) {
             const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
             if (res.ok) {
                 showStatus('Data berhasil disinkronisasi');
-                saranContainer.classList.add('hidden'); // Sembunyikan saran jika berhasil
+                if (saranContainer) saranContainer.classList.add('hidden'); // Sembunyikan saran jika berhasil
                 closeFormModal();
                 fetchKaryawan(); 
             } else {
                 showStatus('Username sudah terpakai.', true);
                 
-                // LOGIKA GENERATOR SARAN USERNAME
-                const baseName = payload.username.toLowerCase().replace(/[^a-z0-9]/g, ''); // Bersihkan karakter aneh
-                const randNum = Math.floor(100 + Math.random() * 900); // 3 digit acak
-                const deptLower = payload.departemen.toLowerCase();
-                
-                // Buat 3 opsi username alternatif
-                const saran1 = `${baseName}${randNum}`;
-                const saran2 = `${baseName}_${deptLower}`;
-                const saran3 = `${baseName}.${new Date().getFullYear()}`;
+                if (saranContainer) {
+                    // LOGIKA GENERATOR SARAN USERNAME
+                    const baseName = payload.username.toLowerCase().replace(/[^a-z0-9]/g, ''); // Bersihkan karakter aneh
+                    const randNum = Math.floor(100 + Math.random() * 900); // 3 digit acak
+                    const deptLower = payload.departemen.toLowerCase();
+                    
+                    // Buat 3 opsi username alternatif
+                    const saran1 = `${baseName}${randNum}`;
+                    const saran2 = `${baseName}_${deptLower}`;
+                    const saran3 = `${baseName}.${new Date().getFullYear()}`;
 
-                saranContainer.innerHTML = `
-                    <span class="w-full text-[9px] font-bold text-rose-500">Coba gunakan rekomendasi ini:</span>
-                    <button type="button" onclick="document.getElementById('username').value='${saran1}'" class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-md hover:bg-indigo-200">${saran1}</button>
-                    <button type="button" onclick="document.getElementById('username').value='${saran2}'" class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-md hover:bg-indigo-200">${saran2}</button>
-                    <button type="button" onclick="document.getElementById('username').value='${saran3}'" class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-md hover:bg-indigo-200">${saran3}</button>
-                `;
-                saranContainer.classList.remove('hidden');
+                    saranContainer.innerHTML = `
+                        <span class="w-full text-[9px] font-bold text-rose-500">Coba gunakan rekomendasi ini:</span>
+                        <button type="button" onclick="document.getElementById('username').value='${saran1}'" class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-md hover:bg-indigo-200">${saran1}</button>
+                        <button type="button" onclick="document.getElementById('username').value='${saran2}'" class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-md hover:bg-indigo-200">${saran2}</button>
+                        <button type="button" onclick="document.getElementById('username').value='${saran3}'" class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-md hover:bg-indigo-200">${saran3}</button>
+                    `;
+                    saranContainer.classList.remove('hidden');
+                }
             }
         } catch (error) { showStatus('Gagal memproses permintaan', true); }
     });
@@ -665,3 +666,65 @@ switchTab = function(tabId) {
         else adminCalendar.render();
     }
 };
+
+// ==========================================
+// --- 8. GENERATOR DOKUMEN FINANSIAL (PAYROLL) ---
+// ==========================================
+async function bukaSlipGajiAdmin(username) {
+    if (!username || username === '-') return;
+
+    document.getElementById('modal-slip-gaji').classList.remove('hidden');
+    
+    // Konfigurasi pengambilan data untuk bulan berjalan
+    const date = new Date();
+    const tahun = date.getFullYear();
+    const bulan = date.getMonth() + 1;
+
+    try {
+        const response = await fetch(`/api/payroll/admin/${username}?tahun=${tahun}&bulan=${bulan}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            
+            document.getElementById('slip-periode').textContent = `${bulan.toString().padStart(2, '0')} - ${tahun}`;
+            document.getElementById('slip-nama').textContent = data.namaPegawai;
+            document.getElementById('slip-ttd-nama').textContent = data.namaPegawai;
+            document.getElementById('slip-dept').textContent = data.departemen;
+            
+            document.getElementById('slip-gapok').textContent = formatRupiah(data.gajiPokok);
+            document.getElementById('slip-jml-telat').textContent = data.totalTelat;
+            document.getElementById('slip-pot-telat').textContent = formatRupiah(data.potonganTelat);
+            document.getElementById('slip-jml-alpa').textContent = data.totalAlpa;
+            document.getElementById('slip-pot-alpa').textContent = formatRupiah(data.potonganAlpa);
+            document.getElementById('slip-thp').textContent = formatRupiah(data.gajiBersih);
+        } else {
+            alert('Gagal mengambil data slip gaji dari pangkalan data.');
+            tutupSlipGaji();
+        }
+    } catch (error) {
+        alert('Terjadi kesalahan transmisi jaringan.');
+        tutupSlipGaji();
+    }
+}
+
+function tutupSlipGaji() {
+    document.getElementById('modal-slip-gaji').classList.add('hidden');
+}
+
+function cetakSlipDokumen() {
+    const areaCetak = document.getElementById('area-cetak').innerHTML;
+    const kontenAsli = document.body.innerHTML;
+
+    // Isolasi DOM untuk memblokir elemen UI lain saat memanggil fungsi cetak
+    document.body.innerHTML = `
+        <div style="padding: 20px; font-family: sans-serif; width: 100%; max-width: 800px; margin: 0 auto; color: black; background: white;">
+            ${areaCetak}
+        </div>
+    `;
+    
+    window.print();
+    document.body.innerHTML = kontenAsli;
+    window.location.reload(); 
+}
