@@ -205,7 +205,7 @@ function renderKaryawanTable(data) {
     data.forEach(k => {
         const amanNama = escapeHTML(k.nama);
         const amanDept = escapeHTML(k.departemen);
-        // Pertahankan format asli (tidak diubah-ubah oleh CSS nantinya)
+
         const amanUser = escapeHTML(k.username || 'N/A');
         const initial = amanNama.substring(0, 2).toUpperCase();
 
@@ -285,6 +285,7 @@ function editKaryawan(id) {
     document.getElementById('gaji').value = k.gaji;
     document.getElementById('username').value = k.username || '';
     document.getElementById('password').value = ''; 
+    document.getElementById('kuota-cuti').value = k.kuotaCuti !== undefined ? k.kuotaCuti : 12;
     
     document.getElementById('form-title').textContent = `Edit Pegawai #${k.id}`;
     openFormModal();
@@ -301,6 +302,7 @@ if(form) {
             nama: document.getElementById('nama').value.trim(),
             departemen: document.getElementById('departemen').value,
             gaji: parseFloat(document.getElementById('gaji').value),
+            kuotaCuti: parseInt(document.getElementById('kuota-cuti').value),
             username: inputUsername.value.trim(),
             password: document.getElementById('password').value
         };
@@ -360,7 +362,13 @@ async function fetchSemuaCuti() {
                 return;
             }
 
-            data.sort((a, b) => a.status === 'MENUNGGU' ? -1 : 1).forEach(c => {
+            // PERBAIKAN: Penyortiran Ganda (Menunggu di atas -> Terbaru di atas)
+            data.sort((a, b) => {
+                if (a.status === 'MENUNGGU' && b.status !== 'MENUNGGU') return -1;
+                if (a.status !== 'MENUNGGU' && b.status === 'MENUNGGU') return 1;
+                return b.id - a.id; // Urutkan dari ID terbesar (terbaru) ke terkecil
+            }).forEach(c => {
+                // Menerapkan XSS Escaping pada Data Dinamis Cuti
                 const amanUser = escapeHTML(c.usernameKaryawan);
                 const amanAlasan = escapeHTML(c.alasan);
                 const amanTglMulai = escapeHTML(c.tanggalMulai);
@@ -375,14 +383,14 @@ async function fetchSemuaCuti() {
                     : (amanStatus === 'DISETUJUI' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700');
                 
                 const actionHTML = isPending ? `
-                    <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100/50 relative z-20">
+                    <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100/50">
                         <button onclick="prosesCuti(${c.id}, 'DISETUJUI')" class="neu-button flex-1 bg-[#5c43d6] text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl cursor-pointer">Setuju</button>
                         <button onclick="prosesCuti(${c.id}, 'DITOLAK')" class="neu-button flex-1 bg-white text-slate-500 text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl cursor-pointer">Tolak</button>
                     </div>
                 ` : '';
 
                 cutiContainer.innerHTML += `
-                    <div class="inner-glass-card rounded-3xl p-5 mb-5 relative z-10">
+                    <div class="inner-glass-card rounded-3xl p-5 mb-5">
                         <div class="flex justify-between items-start mb-3">
                             <div class="flex items-center gap-3">
                                 <div class="neu-icon w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-black text-xs shrink-0 border border-[#dce4f0]">@</div>
@@ -419,7 +427,8 @@ async function prosesCuti(id, status) {
             showStatus('Respon pesan terkirim.');
             fetchSemuaCuti(); 
         } else {
-            showStatus('Gagal merespon cuti', true);
+            const err = await res.json();
+            showStatus(err.message || err.error || 'Validasi gagal memproses cuti.', true);
         }
     } catch (error) {
         showStatus('Terjadi kegagalan jaringan', true);
@@ -529,5 +538,130 @@ switchTab = function(tabId) {
     originalSwitchTabAdmin(tabId);
     if (tabId === 'tab-jadwal') {
         fetchAbsensiHarian();
+    }
+};
+
+// ==========================================
+// --- 7. KALENDER MASTER & INTERVENSI JADWAL ---
+// ==========================================
+let adminCalendar;
+
+async function initAdminCalendar() {
+    const calendarEl = document.getElementById('admin-calendar');
+    if (!calendarEl) return;
+
+    adminCalendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
+        height: 'auto',
+        themeSystem: 'standard',
+        events: async function(info, successCallback, failureCallback) {
+            try {
+                const response = await fetch('/api/jadwal/semua', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    const events = data.map(j => ({
+                        id: j.id,
+                        title: `@${j.usernameKaryawan} (${j.jamMasukShift.substring(0,5)})`,
+                        start: `${j.tanggal}T${j.jamMasukShift}`,
+                        end: `${j.tanggal}T${j.jamPulangShift}`,
+                        backgroundColor: j.status === 'HADIR' ? '#10b981' : (j.status === 'BELUM_MULAI' ? '#3b82f6' : '#f59e0b'),
+                        borderColor: 'transparent',
+                        extendedProps: {
+                            username: j.usernameKaryawan,
+                            tanggal: j.tanggal,
+                            jamMasuk: j.jamMasukShift,
+                            jamPulang: j.jamPulangShift,
+                            status: j.status
+                        }
+                    }));
+                    successCallback(events);
+                } else {
+                    successCallback([]);
+                }
+            } catch (error) { failureCallback(error); }
+        },
+        eventClick: function(info) {
+            // Logika saat HRD mengklik jadwal seseorang
+            const props = info.event.extendedProps;
+            document.getElementById('intervensi-id').value = info.event.id;
+            document.getElementById('intervensi-nama').textContent = `@${props.username}`;
+            document.getElementById('intervensi-tgl').textContent = `Tanggal: ${props.tanggal}`;
+            document.getElementById('intervensi-masuk').value = props.jamMasuk;
+            document.getElementById('intervensi-pulang').value = props.jamPulang;
+            document.getElementById('intervensi-status').value = props.status;
+            
+            document.getElementById('modal-intervensi').classList.remove('hidden');
+            setTimeout(() => {
+                const mc = document.getElementById('container-intervensi');
+                mc.classList.remove('scale-95', 'opacity-0');
+                mc.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+    });
+    adminCalendar.render();
+}
+
+function closeModalIntervensi() {
+    const mc = document.getElementById('container-intervensi');
+    mc.classList.remove('scale-100', 'opacity-100');
+    mc.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        document.getElementById('modal-intervensi').classList.add('hidden');
+    }, 200);
+}
+
+// Logika Simpan Intervensi
+const formIntervensi = document.getElementById('form-intervensi');
+if(formIntervensi) {
+    formIntervensi.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('intervensi-id').value;
+        const payload = {
+            jamMasuk: document.getElementById('intervensi-masuk').value + ":00", // Format HH:mm:ss
+            jamPulang: document.getElementById('intervensi-pulang').value + ":00",
+            status: document.getElementById('intervensi-status').value
+        };
+
+        try {
+            const res = await fetch(`/api/jadwal/${id}/intervensi`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                showStatus('Jadwal berhasil dimodifikasi.');
+                closeModalIntervensi();
+                if(adminCalendar) adminCalendar.refetchEvents();
+                fetchAbsensiHarian(); // Refresh tabel live monitoring
+            } else { showStatus('Gagal memodifikasi jadwal.', true); }
+        } catch (error) { showStatus('Terjadi kegagalan jaringan', true); }
+    });
+}
+
+// Logika Hapus Jadwal
+async function hapusJadwalSpesifik() {
+    const id = document.getElementById('intervensi-id').value;
+    if (!confirm('Hapus jadwal shift ini secara permanen?')) return;
+    
+    try {
+        const res = await fetch(`/api/jadwal/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            showStatus('Jadwal berhasil dihapus (Karyawan Diliburkan).');
+            closeModalIntervensi();
+            if(adminCalendar) adminCalendar.refetchEvents();
+            fetchAbsensiHarian();
+        } else { showStatus('Gagal menghapus jadwal.', true); }
+    } catch (error) { showStatus('Terjadi kegagalan jaringan', true); }
+}
+
+// Panggil initAdminCalendar saat tab jadwal dibuka
+const superSwitchTabAdmin = switchTab;
+switchTab = function(tabId) {
+    superSwitchTabAdmin(tabId);
+    if (tabId === 'tab-jadwal') {
+        if(!adminCalendar) initAdminCalendar();
+        else adminCalendar.render();
     }
 };

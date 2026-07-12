@@ -138,6 +138,9 @@ async function fetchMyProfile() {
 
         if (response.ok) {
             const data = await response.json();
+            kuotaCutiTersisa = data.kuotaCuti;  
+            const badgeKuota = document.getElementById('badge-kuota-cuti');
+            if(badgeKuota) badgeKuota.textContent = data.kuotaCuti;
             
             document.getElementById('profil-inisial').textContent = data.nama.substring(0, 2).toUpperCase();
             document.getElementById('profil-nama').textContent = data.nama;
@@ -563,3 +566,69 @@ async function lakukanClockOut() {
 // ==========================================
 fetchMyProfile();
 initCalendar();
+
+
+// BUKA DAN TARIK DATA SLIP GAJI
+async function bukaSlipGaji() {
+    document.getElementById('modal-slip-gaji').classList.remove('hidden');
+    
+    // Default: Ambil bulan dan tahun saat ini
+    const date = new Date();
+    const tahun = date.getFullYear();
+    const bulan = date.getMonth() + 1;
+
+    try {
+        const response = await fetch(`/api/payroll/me?tahun=${tahun}&bulan=${bulan}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            
+            document.getElementById('slip-periode').textContent = `${bulan.toString().padStart(2, '0')} - ${tahun}`;
+            document.getElementById('slip-nama').textContent = data.namaPegawai;
+            document.getElementById('slip-ttd-nama').textContent = data.namaPegawai;
+            document.getElementById('slip-dept').textContent = data.departemen;
+            
+            document.getElementById('slip-gapok').textContent = formatRupiah(data.gajiPokok);
+            
+            document.getElementById('slip-jml-telat').textContent = data.totalTelat;
+            document.getElementById('slip-pot-telat').textContent = formatRupiah(data.potonganTelat);
+            
+            document.getElementById('slip-jml-alpa').textContent = data.totalAlpa;
+            document.getElementById('slip-pot-alpa').textContent = formatRupiah(data.potonganAlpa);
+            
+            document.getElementById('slip-thp').textContent = formatRupiah(data.gajiBersih);
+        } else {
+            alert('Gagal mengambil data slip gaji.');
+            tutupSlipGaji();
+        }
+    } catch (error) {
+        alert('Terjadi kesalahan jaringan.');
+    }
+}
+
+function tutupSlipGaji() {
+    document.getElementById('modal-slip-gaji').classList.add('hidden');
+}
+
+// ALGORITMA ISOLASI PENCETAKAN
+function cetakSlipDokumen() {
+    const areaCetak = document.getElementById('area-cetak').innerHTML;
+    const kontenAsli = document.body.innerHTML;
+
+    // Mengganti seluruh struktur DOM (sementara) dengan kertas slip saja
+    document.body.innerHTML = `
+        <div style="padding: 20px; font-family: sans-serif; width: 100%; max-width: 800px; margin: 0 auto; color: black; background: white;">
+            ${areaCetak}
+        </div>
+    `;
+    
+    window.print();
+    
+    // Mengembalikan DOM seperti semula setelah pencetakan selesai/batal
+    document.body.innerHTML = kontenAsli;
+    
+    // Re-attach event listeners yang hilang akibat manipulasi DOM
+    window.location.reload(); 
+}

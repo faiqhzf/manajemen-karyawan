@@ -6,6 +6,7 @@
     <title>Dasbor Eksekutif - Manajemen Karyawan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/admin-hr.css">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 </head>
 <body class="h-screen w-full flex items-center justify-center p-4 lg:p-6 text-slate-700">
 
@@ -220,6 +221,11 @@
                         </div>
 
                     </div>
+
+                    <div class="mt-8 inner-glass-card rounded-[2.5rem] p-8 bg-white/40 max-w-[1400px]">
+                        <h2 class="text-xl font-black text-slate-800 mb-4">Kalender Master Operasional</h2>
+                        <div id="admin-calendar" class="w-full min-h-[500px] font-bold text-sm text-slate-700"></div>
+                    </div>
                 </div>
 
             </div>
@@ -254,25 +260,26 @@
 
     </div>
 
-    <div id="form-modal" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center p-4 z-[9999] transition-all">
-        <div class="inner-glass-card rounded-[2.5rem] max-w-sm w-full overflow-hidden transform transition-all scale-95 opacity-0 duration-200" id="modal-container">
+    <div id="form-modal" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center p-4 z-[100] transition-all">
+        
+        <div class="inner-glass-card rounded-[2.5rem] max-w-md w-full overflow-hidden transform transition-all scale-95 opacity-0 duration-200 flex flex-col max-h-[95vh]" id="modal-container">
             
-            <div class="p-5 border-b border-white/50 bg-white/40 flex justify-between items-center">
+            <div class="p-5 border-b border-white/50 bg-white/40 flex justify-between items-center shrink-0">
                 <h2 class="text-base font-black text-slate-800" id="form-title">Tambah Pegawai</h2>
                 <button type="button" onclick="closeFormModal()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
             </div>
             
-            <form id="karyawan-form" class="p-6 space-y-5 bg-white/20 relative z-20">
+            <form id="karyawan-form" class="p-6 space-y-5 bg-white/20 overflow-y-auto">
                 <input type="hidden" id="karyawan-id">
                 
                 <div class="space-y-4">
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Nama Lengkap</label>
-                        <input type="text" id="nama" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs relative z-30">
+                        <input type="text" id="nama" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Divisi</label>
-                        <select id="departemen" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs cursor-pointer relative z-30">
+                        <select id="departemen" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs cursor-pointer">
                             <option value="">Pilih Divisi...</option>
                             <option value="IT">IT</option>
                             <option value="Finance">Finance</option>
@@ -281,28 +288,34 @@
                             <option value="Operations">Operations</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Gaji Pokok (Rp)</label>
-                        <input type="number" id="gaji" required min="0" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs relative z-30">
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Gaji Pokok (Rp)</label>
+                            <input type="number" id="gaji" required min="0" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Kuota Cuti (Hari)</label>
+                            <input type="number" id="kuota-cuti" required min="0" value="12" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs">
+                        </div>
                     </div>
                 </div>
 
-                <div class="p-4 bg-indigo-50/50 rounded-2xl border border-white/50 space-y-3 relative z-30">
+                <div class="p-4 bg-indigo-50/50 rounded-2xl border border-white/50 space-y-3">
                     <h3 class="text-[9px] font-black text-indigo-700 uppercase tracking-widest">Kredensial Login</h3>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-600 mb-1">Username</label>
                         <input type="text" id="username" class="neu-pressed w-full px-3 py-2 font-bold text-xs bg-white/40">
-                        <div id="saran-username" class="hidden mt-2 flex flex-wrap gap-2"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-600 mb-1">Kata Sandi</label>
-                        <input type="password" id="password" class="neu-pressed w-full px-3 py-2 font-bold text-xs bg-white/40" placeholder="Kosongkan jika tidak diubah">
+                        <input type="password" id="password" class="neu-pressed w-full px-3 py-2 font-bold text-xs bg-white/40" placeholder="Abaikan jika tidak diubah">
                     </div>
                 </div>
 
-                <div class="pt-2 flex gap-3 relative z-30">
-                    <button type="button" onclick="closeFormModal()" class="neu-button w-1/3 bg-white/60 text-slate-600 font-bold py-3 rounded-xl text-xs cursor-pointer">Batal</button>
-                    <button type="submit" class="neu-button w-2/3 bg-[#5c43d6] text-white font-black py-3 rounded-xl text-xs cursor-pointer">Simpan Data</button>
+                <div class="pt-2 flex gap-3 shrink-0">
+                    <button type="button" onclick="closeFormModal()" class="neu-button w-1/3 bg-white/60 text-slate-600 font-bold py-3 rounded-xl text-xs">Batal</button>
+                    <button type="submit" class="neu-button w-2/3 bg-[#5c43d6] text-white font-black py-3 rounded-xl text-xs">Simpan Data</button>
                 </div>
             </form>
         </div>
@@ -340,6 +353,51 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="modal-intervensi" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 z-[99999] transition-all">
+        <div class="inner-glass-card rounded-[2.5rem] max-w-sm w-full overflow-hidden transform transition-all scale-95 opacity-0 duration-200" id="container-intervensi">
+            <div class="p-5 border-b border-white/50 bg-white/40 flex justify-between items-center">
+                <h2 class="text-base font-black text-slate-800">Intervensi Jadwal</h2>
+                <button type="button" onclick="closeModalIntervensi()" class="neu-button w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 text-slate-600 font-bold transition-colors">&times;</button>
+            </div>
+            
+            <form id="form-intervensi" class="p-6 space-y-4 bg-white/20">
+                <input type="hidden" id="intervensi-id">
+                
+                <div class="bg-indigo-50/50 p-4 rounded-2xl border border-white/50 mb-2">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Pegawai Ditugaskan</p>
+                    <p class="font-black text-indigo-700 text-sm" id="intervensi-nama">-</p>
+                    <p class="text-[10px] font-bold text-slate-600" id="intervensi-tgl">-</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Jam Masuk</label>
+                        <input type="time" id="intervensi-masuk" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Jam Pulang</label>
+                        <input type="time" id="intervensi-pulang" required class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs cursor-pointer">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Status Presensi</label>
+                    <select id="intervensi-status" class="neu-pressed w-full px-4 py-3 font-bold text-slate-800 text-xs cursor-pointer">
+                        <option value="BELUM_MULAI">BELUM MULAI (Reset)</option>
+                        <option value="HADIR">HADIR (Manual Override)</option>
+                        <option value="TERLAMBAT">TERLAMBAT</option>
+                        <option value="ALPA">ALPA / MANGKIR</option>
+                    </select>
+                </div>
+
+                <div class="pt-4 flex justify-between gap-3">
+                    <button type="button" onclick="hapusJadwalSpesifik()" class="neu-button bg-rose-100 text-rose-600 font-black py-3 px-4 rounded-xl text-xs w-1/3">Hapus</button>
+                    <button type="submit" class="neu-button bg-[#5c43d6] text-white font-black py-3 px-4 rounded-xl text-xs w-2/3">Simpan Perubahan</button>
+                </div>
+            </form>
         </div>
     </div>
 

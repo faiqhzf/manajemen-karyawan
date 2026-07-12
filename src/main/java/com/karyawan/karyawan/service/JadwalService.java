@@ -30,11 +30,41 @@ public class JadwalService {
                 .map(JadwalResponseDTO::fromEntity)
                 .toList();
     }
+    
     public List<JadwalResponseDTO> getJadwalHarian(LocalDate tanggal) {
         return jadwalRepository.findByTanggal(tanggal)
                 .stream()
                 .map(JadwalResponseDTO::fromEntity)
                 .toList();
+    }
+
+    // --- TAMBAHAN BARU 1: Tarik Semua Jadwal untuk Master Calendar HRD ---
+    public List<JadwalResponseDTO> getAllJadwal() {
+        return jadwalRepository.findAll().stream()
+                .map(JadwalResponseDTO::fromEntity)
+                .toList();
+    }
+
+    // --- TAMBAHAN BARU 2: Intervensi (Ubah Jam / Status Jadwal) ---
+    @Transactional
+    public JadwalResponseDTO intervensiJadwal(Long id, LocalTime jamMasuk, LocalTime jamPulang, String status) {
+        JadwalKerja jadwal = jadwalRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Jadwal dengan ID tersebut tidak ditemukan"));
+        
+        jadwal.setJamMasukShift(jamMasuk);
+        jadwal.setJamPulangShift(jamPulang);
+        
+        if (status != null && !status.trim().isEmpty()) {
+            jadwal.setStatus(status);
+        }
+        
+        return JadwalResponseDTO.fromEntity(jadwalRepository.save(jadwal));
+    }
+
+    // --- TAMBAHAN BARU 3: Intervensi (Hapus Jadwal Individu) ---
+    @Transactional
+    public void hapusJadwal(Long id) {
+        jadwalRepository.deleteById(id);
     }
 
     // Fungsi HRD: Membuat jadwal default seminggu (Senin-Jumat) untuk semua karyawan
@@ -48,7 +78,7 @@ public class JadwalService {
             for (int i = 0; i < 5; i++) { // Generate untuk 5 hari (Senin-Jumat)
                 LocalDate tanggal = tanggalMulai.plusDays(i);
                 
-                // Pastikan tidak ada duplikasi jadwal di hari yang sama
+
                 if (jadwalRepository.findByUsernameKaryawanAndTanggal(k.getUsername(), tanggal).isEmpty()) {
                     JadwalKerja jadwal = new JadwalKerja();
                     jadwal.setUsernameKaryawan(k.getUsername());

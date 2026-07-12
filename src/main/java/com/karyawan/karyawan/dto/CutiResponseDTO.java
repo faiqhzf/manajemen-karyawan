@@ -20,6 +20,7 @@ public record CutiResponseDTO(
             cuti.getTanggalSelesai(),
             cuti.getAlasan(),
             cuti.getStatus()
+
         );
     }
 }

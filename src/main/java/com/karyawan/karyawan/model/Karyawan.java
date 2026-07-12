@@ -49,4 +49,18 @@ public class Karyawan {
     
     
     public void setUsername(String username) { this.username = username; }
+
+
+
+    @Column(name = "kuota_cuti", nullable = false)
+    private Integer kuotaCuti = 12;
+
+    // Getter dan Setter
+    public Integer getKuotaCuti() {
+        return kuotaCuti;
+    }
+
+    public void setKuotaCuti(Integer kuotaCuti) {
+        this.kuotaCuti = kuotaCuti;
+    }
 }

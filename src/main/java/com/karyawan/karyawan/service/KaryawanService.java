@@ -44,7 +44,6 @@ public class KaryawanService {
         this.passwordEncoder = passwordEncoder;
     }
 
-   
     private Karyawan findEntityById(long id) {
         return karyawanRepository.findById((int) id)
                 .orElseThrow(() -> new ResourceNotFoundException("Data karyawan dengan ID " + id + " tidak ditemukan"));
@@ -78,6 +77,8 @@ public class KaryawanService {
         karyawan.setGaji(dto.getGaji());
         karyawan.setUsername(dto.getUsername()); 
         
+        karyawan.setKuotaCuti(dto.getKuotaCuti() != null ? dto.getKuotaCuti() : 12);
+        
         Karyawan savedKaryawan = karyawanRepository.save(karyawan);
 
         if (dto.getUsername() != null && !dto.getUsername().trim().isEmpty() && dto.getPassword() != null) {
@@ -93,7 +94,6 @@ public class KaryawanService {
             log.info("Akun pengguna berhasil dibuat untuk username: {}", dto.getUsername());
         }
         
-        // Kembalikan DTO
         return KaryawanResponseDTO.fromEntity(savedKaryawan);
     }
 
@@ -101,12 +101,16 @@ public class KaryawanService {
     public KaryawanResponseDTO updateKaryawan(long id, KaryawanRequestDTO dto) {
         log.info("Memperbarui data karyawan dengan ID: {}", id);
         
-        // Memanggil fungsi internal untuk memanipulasi entitas
         Karyawan karyawan = findEntityById(id);
         karyawan.setNama(dto.getNama());
         karyawan.setDepartemen(dto.getDepartemen());
         karyawan.setGaji(dto.getGaji());
         karyawan.setUsername(dto.getUsername());
+        
+   
+        if (dto.getKuotaCuti() != null) {
+            karyawan.setKuotaCuti(dto.getKuotaCuti());
+        }
         
         Karyawan savedKaryawan = karyawanRepository.save(karyawan);
 
@@ -128,7 +132,6 @@ public class KaryawanService {
             );
         }
         
-        // Kembalikan DTO
         return KaryawanResponseDTO.fromEntity(savedKaryawan);
     }
 
@@ -184,48 +187,48 @@ public class KaryawanService {
                 .toList();
     }
 
-@Value("${app.upload.dir:uploads/profil-photos}")
-private String uploadDir;
+    @Value("${app.upload.dir:uploads/profil-photos}")
+    private String uploadDir;
 
-@Transactional
-public KaryawanResponseDTO updateProfilSendiri(String username, UpdateProfilRequestDTO dto) {
-    Karyawan karyawan = karyawanRepository.findByUsername(username)
-            .orElseThrow(() -> new ResourceNotFoundException("Profil tidak ditemukan untuk username: " + username));
-    karyawan.setNama(dto.getNama());
-    karyawan.setNoTelepon(dto.getNoTelepon());
-    return KaryawanResponseDTO.fromEntity(karyawanRepository.save(karyawan));
-}
-
-@Transactional
-public void gantiPasswordSendiri(String username, ChangePasswordRequestDTO dto) {
-    Pengguna pengguna = penggunaRepository.findByUsername(username)
-            .orElseThrow(() -> new ResourceNotFoundException("Akun tidak ditemukan: " + username));
-
-    if (!passwordEncoder.matches(dto.getPasswordLama(), pengguna.getPassword())) {
-        throw new RuntimeException("Password lama tidak sesuai");
-    }
-    pengguna.setPassword(passwordEncoder.encode(dto.getPasswordBaru()));
-    penggunaRepository.save(pengguna);
-}
-
-@Transactional
-public KaryawanResponseDTO uploadFotoProfil(String username, MultipartFile file) {
-    if (file.isEmpty() || file.getContentType() == null || !file.getContentType().startsWith("image/")) {
-        throw new RuntimeException("File harus berupa gambar");
-    }
-    Karyawan karyawan = karyawanRepository.findByUsername(username)
-            .orElseThrow(() -> new ResourceNotFoundException("Profil tidak ditemukan untuk username: " + username));
-    try {
-        Path targetDir = Paths.get(uploadDir);
-        Files.createDirectories(targetDir);
-        String ekstensi = file.getOriginalFilename() != null && file.getOriginalFilename().contains(".")
-                ? file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.')) : ".jpg";
-        String namaFile = username + ekstensi;
-        Files.copy(file.getInputStream(), targetDir.resolve(namaFile), StandardCopyOption.REPLACE_EXISTING);
-        karyawan.setFotoUrl("/uploads/" + namaFile);
+    @Transactional
+    public KaryawanResponseDTO updateProfilSendiri(String username, UpdateProfilRequestDTO dto) {
+        Karyawan karyawan = karyawanRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Profil tidak ditemukan untuk username: " + username));
+        karyawan.setNama(dto.getNama());
+        karyawan.setNoTelepon(dto.getNoTelepon());
         return KaryawanResponseDTO.fromEntity(karyawanRepository.save(karyawan));
-    } catch (IOException e) {
-        throw new RuntimeException("Gagal menyimpan foto: " + e.getMessage());
     }
-}
+
+    @Transactional
+    public void gantiPasswordSendiri(String username, ChangePasswordRequestDTO dto) {
+        Pengguna pengguna = penggunaRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Akun tidak ditemukan: " + username));
+
+        if (!passwordEncoder.matches(dto.getPasswordLama(), pengguna.getPassword())) {
+            throw new RuntimeException("Password lama tidak sesuai");
+        }
+        pengguna.setPassword(passwordEncoder.encode(dto.getPasswordBaru()));
+        penggunaRepository.save(pengguna);
+    }
+
+    @Transactional
+    public KaryawanResponseDTO uploadFotoProfil(String username, MultipartFile file) {
+        if (file.isEmpty() || file.getContentType() == null || !file.getContentType().startsWith("image/")) {
+            throw new RuntimeException("File harus berupa gambar");
+        }
+        Karyawan karyawan = karyawanRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Profil tidak ditemukan untuk username: " + username));
+        try {
+            Path targetDir = Paths.get(uploadDir);
+            Files.createDirectories(targetDir);
+            String ekstensi = file.getOriginalFilename() != null && file.getOriginalFilename().contains(".")
+                    ? file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.')) : ".jpg";
+            String namaFile = username + ekstensi;
+            Files.copy(file.getInputStream(), targetDir.resolve(namaFile), StandardCopyOption.REPLACE_EXISTING);
+            karyawan.setFotoUrl("/uploads/" + namaFile);
+            return KaryawanResponseDTO.fromEntity(karyawanRepository.save(karyawan));
+        } catch (IOException e) {
+            throw new RuntimeException("Gagal menyimpan foto: " + e.getMessage());
+        }
+    }
 }

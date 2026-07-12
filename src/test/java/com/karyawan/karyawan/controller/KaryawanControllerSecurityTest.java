@@ -43,19 +43,19 @@ class KaryawanControllerSecurityTest {
                .andExpect(status().isForbidden());
     }
 
-    @Test
+   @Test
     @WithMockUser(username = "faiq_hudzaifah", roles = "KARYAWAN")
     void whenKaryawanAccessMyProfile_thenStatusIsOk() throws Exception {
         
-
         KaryawanResponseDTO mockResponse = new KaryawanResponseDTO(
                 1L, 
                 "Faiq Hudzaifah", 
                 "IT", 
                 BigDecimal.valueOf(10000000), 
-                "faiq_hudzaifah",
                 "081234567890",
-                "/uploads/profil-photos/faiq_hudzaifah.jpg" 
+                "faiq_hudzaifah", 
+                "/uploads/profil-photos/faiq_hudzaifah.jpg",
+                12 
         );
         when(karyawanService.getKaryawanByUsername("faiq_hudzaifah")).thenReturn(mockResponse);
 

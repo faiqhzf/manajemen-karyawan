@@ -1,10 +1,10 @@
 package com.karyawan.karyawan.dto;
+
 import java.math.BigDecimal;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
-
 
 public class KaryawanRequestDTO {
     @NotBlank(message = "Nama karyawan tidak boleh kosong")
@@ -19,8 +19,10 @@ public class KaryawanRequestDTO {
     
     private String username;
     private String password;
+    
 
-    // --- Getter dan Setter Mutlak Diperlukan oleh Spring (Jackson) ---
+    private Integer kuotaCuti;
+
     public String getNama() { return nama; }
     public void setNama(String nama) { this.nama = nama; }
 
@@ -35,4 +37,8 @@ public class KaryawanRequestDTO {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    // PERBAIKAN: Menambahkan Getter dan Setter untuk kuotaCuti
+    public Integer getKuotaCuti() { return kuotaCuti; }
+    public void setKuotaCuti(Integer kuotaCuti) { this.kuotaCuti = kuotaCuti; }
 }

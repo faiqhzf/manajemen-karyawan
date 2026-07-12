@@ -13,6 +13,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import java.time.LocalTime;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/jadwal")
 public class JadwalController {
@@ -80,5 +83,32 @@ public class JadwalController {
             targetDate = LocalDate.now(ZoneId.of("Asia/Jakarta")); 
         }
         return ResponseEntity.ok(jadwalService.getJadwalHarian(targetDate));
+    }
+
+
+    @GetMapping("/semua")
+    @PreAuthorize("hasRole('HRD')")
+    public ResponseEntity<List<JadwalResponseDTO>> getAllJadwal() {
+        return ResponseEntity.ok(jadwalService.getAllJadwal());
+    }
+
+    @PutMapping("/{id}/intervensi")
+    @PreAuthorize("hasRole('HRD')")
+    public ResponseEntity<JadwalResponseDTO> updateJadwal(
+            @PathVariable Long id, 
+            @RequestBody Map<String, String> payload) {
+        
+        LocalTime masuk = LocalTime.parse(payload.get("jamMasuk"));
+        LocalTime pulang = LocalTime.parse(payload.get("jamPulang"));
+        String status = payload.get("status");
+        
+        return ResponseEntity.ok(jadwalService.intervensiJadwal(id, masuk, pulang, status));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('HRD')")
+    public ResponseEntity<Void> deleteJadwal(@PathVariable Long id) {
+        jadwalService.hapusJadwal(id);
+        return ResponseEntity.ok().build();
     }
 }
